@@ -6,4 +6,4 @@ CC=gcc
 .PHONY: clean
 
 clean:
-	rm -f *.o 1A_main out.png out.pnm
+	rm -f *.o 1A_main out.png out.pbm

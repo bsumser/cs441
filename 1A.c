@@ -14,12 +14,7 @@ int main(int argc, char* argv[])
     int chan = 3;
     int totalSize = width * height * chan;
 
-    unsigned char* imgPointer = (unsigned char*) malloc(totalSize * sizeof(unsigned char));
-    char pixel[] = "255 0 0 ";
-    char lineBreak[] = "\n";
-    char heading[] = "P6\n300 300\n255\n";
-
-    char *filename = "out.pnm";
+    char *filename = "out.pbm";
 
     FILE *f = fopen(filename, "wb");
 
@@ -31,20 +26,26 @@ int main(int argc, char* argv[])
         printf("file open success");
     }
 
-    fwrite(heading, 1, sizeof(heading), f);
+    fprintf(f, "P1 ");
+    fprintf(f, "300 300 ");
+    //fprintf(f, "255 ");
 
     int maxVal = (299 * 299);
 
-    for (int i = 0; i < maxVal; i++){
-        fwrite(pixel, 1, sizeof(pixel), f);
+    for (int i = 0; i < maxVal; i++) {
+        fprintf(f, "1 ");
 
+        if (i % 2 == 0) {
+            fprintf(f, "1 ");
+        }
+        else {
+            fprintf(f, "0 ");
+        }
         if (i != 0 && i % 299 == 0) {
-            fwrite(lineBreak, 1, sizeof(lineBreak), f);
+            fprintf(f, "\n");
         }
     }
 
     fclose(f);
-    free(imgPointer);
-
     return 0;
 }
