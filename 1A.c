@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     unsigned char* imgPointer = (unsigned char*) malloc(totalSize * sizeof(unsigned char));
 
 
-    char *filename = "out";
+    char *filename = "out.pnm";
 
     FILE *f = fopen(filename, "wb");
 
@@ -33,15 +33,17 @@ int main(int argc, char* argv[])
     fprintf(f, "300 300\n");
     fprintf(f, "255\n");
 
-    int maxVal = width * height;
+    int maxVal = (width * height) - 2;
 
-    for (int i = 0; i < maxVal; i+= 1){
+    for (int i = 0; i < maxVal; i++){
         fprintf(f, "255 ");
-        fprintf(f, "255 ");
-        fprintf(f, "255 ");
+        fprintf(f, "0 ");
+        fprintf(f, "0 ");
 
+        if (i == 299) {
+            fprintf(f, "\n");
+        }
     }
-
 
     fclose(f);
     free(imgPointer);
