@@ -15,33 +15,31 @@ int main(int argc, char* argv[])
     int totalSize = width * height * chan;
 
     unsigned char* imgPointer = (unsigned char*) malloc(totalSize * sizeof(unsigned char));
-
+    char pixel[] = "255 0 0 ";
+    char lineBreak[] = "\n";
+    char heading[] = "P6\n300 300\n255\n";
 
     char *filename = "out.pnm";
 
     FILE *f = fopen(filename, "wb");
 
     if (f == NULL) {
-        printf("Hello World");
+        printf("file open failure");
         return 0;
     }
     else {
         printf("file open success");
     }
 
-    fprintf(f, "P6\n");
-    fprintf(f, "300 300\n");
-    fprintf(f, "255\n");
+    fwrite(heading, 1, sizeof(heading), f);
 
-    int maxVal = (width * height) - 2;
+    int maxVal = (299 * 299);
 
     for (int i = 0; i < maxVal; i++){
-        fprintf(f, "255 ");
-        fprintf(f, "0 ");
-        fprintf(f, "0 ");
+        fwrite(pixel, 1, sizeof(pixel), f);
 
-        if (i == 299) {
-            fprintf(f, "\n");
+        if (i != 0 && i % 299 == 0) {
+            fwrite(lineBreak, 1, sizeof(lineBreak), f);
         }
     }
 
