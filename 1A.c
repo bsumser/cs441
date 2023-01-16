@@ -36,12 +36,11 @@ int main(int argc, char* argv[])
             else if (i <= 1 && j >= 2 && j <= 3) {fprintf(f, "128 128 128  ");} //grey
             else if (i <= 1 && j >= 4) {fprintf(f, "255 255 255  ");} //white
             else if (i <= 3 && j <= 1) {fprintf(f, "255 0 0  ");} //red
-            //else if (i >= 4 && j >= 2 && j <= 3) {fprintf(f, "0 255 0");} //green
             else if (i <= 3 && j >= 4) {fprintf(f, "0 0 255  ");} //blue
             else if (i >= 4 && j <= 1) {fprintf(f, "255 0 255  ");} //pink
             else if (i >= 4 && j >= 2 && j <= 3) {fprintf(f, "0 255 255  ");} //cyan
             else if (i >= 4 && j >= 4) {fprintf(f, "255 255 0  ");} //yellow
-            else {fprintf(f, "0 0 0  ");}
+            else {fprintf(f, "0 255 0  ");}
         }
         fprintf(f, "\n");
     }
