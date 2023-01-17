@@ -9,10 +9,12 @@ int main(int argc, char* argv[])
 {
     printf("Hello World");
 
-    int width = 6;
-    int height = 6;
-    int chan = 3;
-    int totalSize = width * height * chan;
+    int width = 300;
+    int height = 300;
+
+    int first = width / 3;
+    int second = width * 0.6666;
+    int third = width;
 
     char *filename = "out.ppm";
 
@@ -27,19 +29,19 @@ int main(int argc, char* argv[])
     }
 
     fprintf(f, "P3\n");
-    fprintf(f, "6 6\n");
+    fprintf(f, "300 300\n");
     fprintf(f, "255\n");
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
-            if (i <= 1 && j <= 1) {fprintf(f, "0 0 0  ");} //black
-            else if (i <= 1 && j >= 2 && j <= 3) {fprintf(f, "128 128 128  ");} //grey
-            else if (i <= 1 && j >= 4) {fprintf(f, "255 255 255  ");} //white
-            else if (i <= 3 && j <= 1) {fprintf(f, "255 0 0  ");} //red
-            else if (i <= 3 && j >= 4) {fprintf(f, "0 0 255  ");} //blue
-            else if (i >= 4 && j <= 1) {fprintf(f, "255 0 255  ");} //pink
-            else if (i >= 4 && j >= 2 && j <= 3) {fprintf(f, "0 255 255  ");} //cyan
-            else if (i >= 4 && j >= 4) {fprintf(f, "255 255 0  ");} //yellow
+            if (i <= first - 1 && j <= first - 1) {fprintf(f, "0 0 0  ");} //black
+            else if (i <= first - 1 && j >= first && j <= second - 1) {fprintf(f, "128 128 128  ");} //grey
+            else if (i <= first - 1 && j >= second && j <= third - 1) {fprintf(f, "255 255 255  ");} //white
+            else if (i >= first && i <= second - 1 && j >= 0 && j <= first - 1) {fprintf(f, "255 0 0  ");} //red
+            else if (i >= first && i <= second - 1 && j >= second && j <= third - 1) {fprintf(f, "0 0 255  ");} //blue
+            else if (i >= second && i <= third - 1 && j >= 0 && j <= first - 1) {fprintf(f, "255 0 255  ");} //pink
+            else if (i >= second && i <= third - 1 && j >= first && j <= second - 1) {fprintf(f, "0 255 255  ");} //cyan
+            else if (i >= second && i <= third - 1 && j >= second && j <= third - 1) {fprintf(f, "255 255 0  ");} //yellow
             else {fprintf(f, "0 255 0  ");}
         }
         fprintf(f, "\n");
