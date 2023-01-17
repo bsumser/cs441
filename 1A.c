@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
             else if (i >= second && i <= third - 1 && j >= 0 && j <= first - 1) {fprintf(f, "255 0 255  ");} //pink
             else if (i >= second && i <= third - 1 && j >= first && j <= second - 1) {fprintf(f, "0 255 255  ");} //cyan
             else if (i >= second && i <= third - 1 && j >= second && j <= third - 1) {fprintf(f, "255 255 0  ");} //yellow
-            else {fprintf(f, "0 255 0  ");}
+            else {fprintf(f, "0 255 0  ");} //green
         }
         fprintf(f, "\n");
     }
