@@ -24,11 +24,12 @@ struct Pixel cyan = {.red = 0, .green = 255, .blue = 255};
 struct Pixel yellow = {.red = 255, .green = 255, .blue = 0};
 
 //forward declare custom pixel setter
-void writePixel(struct Pixel pixel, FILE *fp);
+void writeImage(struct Image image, FILE *fp);
 
 int main(int argc, char* argv[])
 {
     printf("Hello World");
+    struct Image squares;
 
     int width = 300;
     int height = 300;
@@ -60,25 +61,23 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
-            if (i <= first - 1 && j <= first - 1) {writePixel(black, f);} //black
-            else if (i <= first - 1 && j >= first && j <= second - 1) {writePixel(grey, f);} //grey
-            else if (i <= first - 1 && j >= second && j <= third - 1) {writePixel(white, f);} //white
-            else if (i >= first && i <= second - 1 && j >= 0 && j <= first - 1) {writePixel(red, f);} //red
-            else if (i >= first && i <= second - 1 && j >= second && j <= third - 1) {writePixel(blue, f);} //blue
-            else if (i >= second && i <= third - 1 && j >= 0 && j <= first - 1) {writePixel(pink, f);} //pink
-            else if (i >= second && i <= third - 1 && j >= first && j <= second - 1) {writePixel(cyan, f);} //cyan
-            else if (i >= second && i <= third - 1 && j >= second && j <= third - 1) {writePixel(yellow, f);} //yellow
-            else {writePixel(green, f);} //green
-        ;}
-        //fwrite(&newLine, sizeof(newLine), 1, f);
+            if (i <= first - 1 && j <= first - 1) {squares.pixel_array[i][j] = black;} //black
+            else if (i <= first - 1 && j >= first && j <= second - 1) {squares.pixel_array[i][j] = grey;} //grey
+            else if (i <= first - 1 && j >= second && j <= third - 1) {squares.pixel_array[i][j] = white;} //white
+            else if (i >= first && i <= second - 1 && j >= 0 && j <= first - 1) {squares.pixel_array[i][j] = red;} //red
+            else if (i >= first && i <= second - 1 && j >= second && j <= third - 1) {squares.pixel_array[i][j] = blue;} //blue
+            else if (i >= second && i <= third - 1 && j >= 0 && j <= first - 1) {squares.pixel_array[i][j] = pink;} //pink
+            else if (i >= second && i <= third - 1 && j >= first && j <= second - 1) {squares.pixel_array[i][j] = cyan;} //cyan
+            else if (i >= second && i <= third - 1 && j >= second && j <= third - 1) {squares.pixel_array[i][j] = yellow;} //yellow
+            else {squares.pixel_array[i][j] = green;} //green
+        }
     }
+    fwrite(&squares, sizeof(squares), 1, f);
     fclose(f);
     return 0;
 }
 
-void writePixel(struct Pixel pixel, FILE *fp)
+void writeImage(struct Image image, FILE *fp)
 {
-    fwrite(&pixel.red, 1, sizeof(pixel.red), fp);
-    fwrite(&pixel.green, 1, sizeof(pixel.green), fp);
-    fwrite(&pixel.blue, 1, sizeof(pixel.blue), fp);
+    fwrite(&image, sizeof(struct Image), 900, fp);
 }
