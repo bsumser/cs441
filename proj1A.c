@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 
     int width = 300;
     int height = 300;
+    int colorRange = 255;
 
     int first = width / 3;
     int second = (width * 0.6666) + 1;
@@ -56,8 +57,8 @@ int main(int argc, char* argv[])
     printf("third - %d\n", third);
 
     fprintf(f, "P6\n");
-    fprintf(f, "300 300\n");
-    fprintf(f, "255\n");
+    fprintf(f, "%d %d\n", width, height);
+    fprintf(f, "%d\n", colorRange);
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
@@ -72,12 +73,12 @@ int main(int argc, char* argv[])
             else {squares.pixel_array[i][j] = green;} //green
         }
     }
-    fwrite(&squares, sizeof(squares), 1, f);
+    fwrite(&squares, sizeof(squares), 900, f);
     fclose(f);
     return 0;
 }
 
 void writeImage(struct Image image, FILE *fp)
 {
-    fwrite(&image, sizeof(struct Image), 900, fp);
+    fwrite(&image, sizeof(struct Image), 1, fp);
 }
