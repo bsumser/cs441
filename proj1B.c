@@ -90,14 +90,75 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
 {
     printf("triangle color rgb values are %d %d %d \n",
            triangle->color[0], triangle->color[1], triangle->color[2]);
-    printf("triangle vertexes are (%f,%f) (%f,%f) (%f,%f)",
+    printf("triangle vertexes are (%f,%f) (%f,%f) (%f,%f)\n",
            triangle->X[0], triangle->Y[0], triangle->X[1], triangle->Y[1], triangle->X[2], triangle->Y[2]);
+
+    Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
+
+    int leftIdx = 0;
+    int topIdx = 0;
+    int rightIdx = 0;
+    for (int i = 0; i < 3; i++) {
+        if (triangle->X[leftIdx] >= triangle->X[i] && triangle->Y[leftIdx] >= triangle->Y[i]) {
+            leftIdx = i;
+        }
+        if (triangle->Y[topIdx] <= triangle->Y[i]) {
+            topIdx = i;
+        }
+    }
+    rightIdx = 6 - (topIdx + leftIdx + 3);
+
+    printf("left vertex index is %d at (%f,%f)\n", leftIdx, triangle->X[leftIdx], triangle->Y[leftIdx]);
+    printf("top vertex index is %d at (%f,%f)\n", topIdx, triangle->X[topIdx], triangle->Y[topIdx]);
+    printf("right vertex index is %d at (%f,%f)\n", rightIdx, triangle->X[rightIdx], triangle->Y[rightIdx]);
+
+    double minX = F441(triangle->X[leftIdx]);
+    double maxX = C441(triangle->X[rightIdx]);
+    double minY = F441(triangle->Y[leftIdx]);
+    double maxY = C441(triangle->Y[topIdx]);
+
+    printf("X floor is %f ceil is %f\n", minX, maxX);
+    printf("Y floor is %f ceil is %f\n", minY, maxY);
+
+    printf("Scanlines go from %1f to %1f\n", minY, maxY);
+
+    double x1 = triangle->X[topIdx];
+    double y1 = triangle->Y[topIdx];
+    double x2 = triangle->X[leftIdx];
+    double y2 = triangle->Y[leftIdx];
+    double x3 = triangle->X[rightIdx];
+    double y3 = triangle->Y[rightIdx];
+
+    double slopeRight = (y3 - y1)/(x3 - x1);
+    if (slopeRight == INFINITY) {printf("right infinity achieved\n");}
+    double slopeLeft = (y2 - y1)/(x2 - x1);
+    if (slopeLeft == INFINITY) {printf("left infinity achieved\n");}
+
+    printf("Right slope is %f\n", slopeRight);
+    printf("Left slope is %f\n", slopeLeft);
+
+    printf("Scalines go from %f to %f\n", minY, maxY);
+
+    for (int i = 0; i < 3; i++) {
+        int x = 999 - triangle->X[i];
+        int y = triangle->Y[i];
+
+        printf("inserting pixel at pixels[%d][%d]\n", x, y);
+
+        if (x >= 1000 || y >= 1000)
+            continue;
+        img->pixels[x][y] = pixel;
+    }
+
+
+    for (int i = (int)minY; i < (int)maxY; i++) {
+
+    }
 }
 
 void writeImage(Image image, FILE *fp)
 {
-    int num = 1000 * 1000;
-    fwrite(&image, sizeof(Image), num, fp);
+    fwrite(&image, sizeof(Image), 1, fp);
 }
 
 
@@ -154,13 +215,13 @@ int main(int argc, char* argv[])
     fprintf(fp, "%d %d\n", width, height);
     fprintf(fp, "%d\n", colorRange);
 
-    writeImage(img, fp);
 
 //some useful code that goes in your main loop:
-    for (int i = 0 ; i < tl->numTriangles ; i++) {
-        //RasterizeGoingUpTriangle(tl->triangles+i, &img);
+    for (int i = 0 ; i < tl->numTriangles; i++) {
+        RasterizeGoingUpTriangle(tl->triangles+i, &img);
     }
 
+    writeImage(img, fp);
     fclose(fp);
     return 0;
 }
