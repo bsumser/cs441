@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
             else {squares.pixel_array[i][j] = green;} //green
         }
     }
-    fwrite(&squares, sizeof(squares), 900, f);
+    fwrite(&squares, sizeof(squares), 1, f);
     fclose(f);
     return 0;
 }
