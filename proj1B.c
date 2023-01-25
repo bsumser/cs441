@@ -161,8 +161,8 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
 
     double minX = triangle->X[triangle->leftIdx];
     double maxX = triangle->X[triangle->rightIdx];
-    double minY = triangle->Y[triangle->leftIdx];
-    double maxY = triangle->Y[triangle->topIdx];
+    double minY = C441(triangle->Y[triangle->leftIdx]);
+    double maxY = C441(triangle->Y[triangle->topIdx]);
 
     printf("X floor is %f ceil is %f\n", minX, maxX);
     printf("Y floor is %f ceil is %f\n", minY, maxY);
@@ -214,16 +214,19 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     for (int i = (int)minY; i <= (int)maxY; i++) {
         if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
+        rightEnd = F441(rightEnd);
+        leftEnd = C441(leftEnd);
         printf("Scanline %d goes from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
 
-        for (int c = (int)leftEnd; c < (int)rightEnd; c++) {
-            int x = 999 - i;
+        for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
+            int x = 1000 - i;
             int y = c;
-            //printf("inserting pixel at pixels[%d][%d]\n", x, y);
-            img->pixels[x][y] = pixel;
-            if ((x >= 1000 || y >= 1000) || (x < 0 || y < 1000)) {
+            if (x > 1000 || y > 1000 || x < 0 || y < 0) {
+                printf("x = %d | y = %d\n",x,y);
                 continue;
             }
+            //printf("inserting pixel at pixels[%d][%d]\n", x, y);
+            img->pixels[x][y] = pixel;
         }
     }
 }
@@ -314,6 +317,7 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     int triangleFail = 0;
+    //for (int i = 0 ; i < 1; i++) {
     for (int i = 0 ; i < tl->numTriangles; i++) {
         //Triangle *curTriangle = &testTriangle;
         Triangle *curTriangle = tl->triangles+i;
