@@ -159,10 +159,10 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
 
 
-    double minX = F441(triangle->X[triangle->leftIdx]);
-    double maxX = C441(triangle->X[triangle->rightIdx]);
-    double minY = F441(triangle->Y[triangle->leftIdx]);
-    double maxY = C441(triangle->Y[triangle->topIdx]);
+    double minX = triangle->X[triangle->leftIdx];
+    double maxX = triangle->X[triangle->rightIdx];
+    double minY = triangle->Y[triangle->leftIdx];
+    double maxY = triangle->Y[triangle->topIdx];
 
     printf("X floor is %f ceil is %f\n", minX, maxX);
     printf("Y floor is %f ceil is %f\n", minY, maxY);
@@ -211,7 +211,7 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     printf("Left slope is %f\n", slopeLeft);
 
     printf("Scalines go from %f to %f\n", minY, maxY);
-    for (int i = (int)minY; i < (int)maxY; i++) {
+    for (int i = (int)minY; i <= (int)maxY; i++) {
         if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
         printf("Scanline %d goes from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
@@ -219,7 +219,7 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
         for (int c = (int)leftEnd; c < (int)rightEnd; c++) {
             int x = 999 - i;
             int y = c;
-            printf("inserting pixel at pixels[%d][%d]\n", x, y);
+            //printf("inserting pixel at pixels[%d][%d]\n", x, y);
             img->pixels[x][y] = pixel;
             if ((x >= 1000 || y >= 1000) || (x < 0 || y < 1000)) {
                 continue;
@@ -296,9 +296,26 @@ int main(int argc, char* argv[])
     fprintf(fp, "%d %d\n", width, height);
     fprintf(fp, "%d\n", colorRange);
 
+    Triangle testTriangle = {
+    .X[0] = 555.000000,
+    .X[1] = 500.000000,
+    .X[2] = 605.000000,
+    .Y[0] = 500.000000,
+    .Y[1] = 560.000000,
+    .Y[2] = 500.000000,
+    .color[0] = red.red,
+    .color[1] = red.green,
+    .color[2] = red.blue,
+
+    .leftIdx = 0,
+    .rightIdx = 0,
+    .topIdx = 0,
+    .bottomIdx = 0,
+    .triangleType = -1};
 
     int triangleFail = 0;
     for (int i = 0 ; i < tl->numTriangles; i++) {
+        //Triangle *curTriangle = &testTriangle;
         Triangle *curTriangle = tl->triangles+i;
         determineTriangle(curTriangle);
         switch(curTriangle->triangleType) {
