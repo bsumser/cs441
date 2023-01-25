@@ -112,17 +112,17 @@ void determineTriangle(Triangle *triangle) {
     int rightIdx = 0;
     int bottomIdx = 0;
     for (int i = 0; i < 3; i++) {
-        if (triangle->X[leftIdx] >= triangle->X[i] && triangle->Y[leftIdx] >= triangle->Y[i]) {
-            leftIdx = i;
-        }
-        if (triangle->Y[topIdx] <= triangle->Y[i]) {
+        if (triangle->Y[topIdx] < triangle->Y[i]) {
             topIdx = i;
+        }
+        if ((triangle->X[rightIdx] < triangle->X[i]) && (i != topIdx)) {
+            rightIdx = i;
         }
         if (triangle->Y[bottomIdx] >= triangle->Y[i]) {
             bottomIdx = i;
         }
     }
-    rightIdx = 6 - (topIdx + leftIdx + 3);
+    leftIdx = 6 - (topIdx + rightIdx + 3);
 
     triangle->leftIdx = leftIdx;
     triangle->rightIdx = rightIdx;
