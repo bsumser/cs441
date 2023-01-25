@@ -25,6 +25,7 @@ typedef struct
     int rightIdx;
     int topIdx;
     int bottomIdx;
+    int triangleType;
 
 } Triangle;
 
@@ -68,6 +69,7 @@ GetTriangles(void)
        tl->triangles[i].rightIdx = 0;
        tl->triangles[i].topIdx = 0;
        tl->triangles[i].bottomIdx = 0;
+       tl->triangles[i].triangleType = -1; // variable for unset triangle type
    }
 
    return tl;
@@ -133,17 +135,29 @@ void determineTriangle(Triangle *triangle) {
     printf("bottom vertex index is %d at (%f,%f)\n", bottomIdx, triangle->X[bottomIdx], triangle->Y[bottomIdx]);
 
     //flat bottom
+    if (bottomIdx == leftIdx || (bottomIdx == rightIdx)) {
+        printf("triangle is flat bottom\n");
+        triangle->triangleType = 0;
+    }
 
     //flat top
+    else if (topIdx == leftIdx || (topIdx == rightIdx)) {
+        printf("triangle is flat top\n");
+        triangle->triangleType = 1;
+    }
 
     //arbitrary
-
+    else {
+        printf("triangle is arbitrary\n");
+        triangle->triangleType = 2;
+    }
 }
 
 void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
 {
-    determineTriangle(triangle);
+    printf("%s called\n", __func__);
     Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
+
 
     double minX = F441(triangle->X[triangle->leftIdx]);
     double maxX = C441(triangle->X[triangle->rightIdx]);
@@ -162,39 +176,72 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     double x3 = triangle->X[triangle->rightIdx];
     double y3 = triangle->Y[triangle->rightIdx];
 
+    //variables for left and right endpoint
+    double leftEnd = -1;
+    double rightEnd = -1;
+    double leftB = 0;
+    double rightB = 0;
+
+    int updateLeft = -1;
+    int updateRight = -1;
+
     double slopeRight = (y3 - y1)/(x3 - x1);
-    if (slopeRight == INFINITY) {printf("right infinity achieved\n");}
+    if (slopeRight == INFINITY || slopeRight == -INFINITY) {
+        rightEnd = maxX;
+        printf("right infinity achieved, leftEnd = %f\n", rightEnd);
+        updateRight = 0;
+    }
+    else {
+        rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
+        updateRight = 1;
+    }
+
     double slopeLeft = (y2 - y1)/(x2 - x1);
-    if (slopeLeft == INFINITY) {printf("left infinity achieved\n");}
+    if (slopeLeft == INFINITY || slopeLeft == -INFINITY) {
+        leftEnd = minX;
+        printf("left infinity achieved, leftEnd = %f\n", leftEnd);
+        updateLeft = 0;
+    }
+    else {
+        leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
+        updateLeft = 1;
+    }
 
     printf("Right slope is %f\n", slopeRight);
     printf("Left slope is %f\n", slopeLeft);
 
     printf("Scalines go from %f to %f\n", minY, maxY);
-
-    for (int i = 0; i < 3; i++) {
-        int x = 999 - triangle->X[i];
-        int y = triangle->Y[i];
-
-        printf("inserting pixel at pixels[%d][%d]\n", x, y);
-
-        if ((x >= 1000 || y >= 1000) || (x < 0 || y < 1000))
-            continue;
-        img->pixels[x][y] = pixel;
-    }
-
-
     for (int i = (int)minY; i < (int)maxY; i++) {
+        if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
+        if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
+        printf("Scanline %d goes from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
 
+        for (int c = (int)leftEnd; c < (int)rightEnd; c++) {
+            int x = 999 - i;
+            int y = c;
+            printf("inserting pixel at pixels[%d][%d]\n", x, y);
+            img->pixels[x][y] = pixel;
+            if ((x >= 1000 || y >= 1000) || (x < 0 || y < 1000)) {
+                continue;
+            }
+        }
     }
+}
+
+void RasterizeGoingDownTriangle(Triangle *triangle, Image *img) {
+    printf("%s not implemented yet\n", __func__);
+}
+
+void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
+    printf("%s not implemented yet\n", __func__);
 }
 
 
 void writeImage(Image image, FILE *fp)
 {
-    fwrite(&image, sizeof(Image), 1, fp);
+    printf("%s called\n", __func__);
+    fwrite(&image, sizeof(image), 1, fp);
 }
-
 
 FILE* setFile(int width, int height, int colorRange)
 {
@@ -228,8 +275,8 @@ int main(int argc, char* argv[])
 
     Image img;
 
-    for (int i; i < 1000; i++) {
-        for (int j; j < 1000; j++) {
+    for (int i = 0; i < 1000; i++) {
+        for (int j = 0; j < 1000; j++) {
             img.pixels[i][j] = black;
         }
     }
@@ -250,12 +297,30 @@ int main(int argc, char* argv[])
     fprintf(fp, "%d\n", colorRange);
 
 
-//some useful code that goes in your main loop:
-    for (int i = 0 ; i < 1/*tl->numTriangles*/; i++) {
-        RasterizeGoingUpTriangle(tl->triangles+i, &img);
+    int triangleFail = 0;
+    for (int i = 0 ; i < tl->numTriangles; i++) {
+        Triangle *curTriangle = tl->triangles+i;
+        determineTriangle(curTriangle);
+        switch(curTriangle->triangleType) {
+            case (0):
+                printf("rasterizing flat bottom triangle\n");
+                RasterizeGoingUpTriangle(curTriangle, &img);
+                break;
+            case (1):
+                printf("rasterizing flat top triangle\n");
+                RasterizeGoingUpTriangle(curTriangle, &img);
+                triangleFail++;
+                break;
+            case (2):
+                printf("rasterizing arbitrary triangle\n");
+                RasterizeArbitraryTriangle(curTriangle, &img);
+                triangleFail++;
+                break;
+        }
     }
 
     writeImage(img, fp);
     fclose(fp);
+    printf("Fail count = %d\n", triangleFail);
     return 0;
 }
