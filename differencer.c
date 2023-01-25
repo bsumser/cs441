@@ -90,7 +90,10 @@ int main(int argc, char *argv[])
     fread(buffer1, sizeof(unsigned char), numbytes, f1);
     fread(buffer2, sizeof(unsigned char), numbytes, f2);
 
+    FILE *f_out = fopen("differences.pnm", "wb");
+    fprintf(f_out, "P6\n%d %d\n255\n", nx, ny);
     int totalDiff = 0;
+    unsigned char *diff_buff = malloc(3*nx*ny);
     for (int R = ny-1 ; R >= 0 ; R--)
     {
         for (int C = 0 ; C < nx ; C++)
@@ -107,14 +110,29 @@ int main(int argc, char *argv[])
                         filename1, buffer1[3*index+0], buffer1[3*index+1], buffer1[3*index+2],
                         filename2, buffer2[3*index+0], buffer2[3*index+1], buffer2[3*index+2]);
                 totalDiff++;
+/*
                 if (totalDiff > 100)
                 {
                     printf("Stopping print statements after 100 different pixels found.  There may be more pixels that are different.\n");
                     exit(EXIT_FAILURE);
                 }
+ */
+                int index_rev = (R)*nx+C;
+                diff_buff[3*index_rev+0] = 255;
+                diff_buff[3*index_rev+1] = 255;
+                diff_buff[3*index_rev+2] = 255;
+            }
+            else
+            {
+                int index_rev = (R)*nx+C;
+                diff_buff[3*index_rev+0] = buffer1[3*index+0];
+                diff_buff[3*index_rev+1] = buffer1[3*index+1];
+                diff_buff[3*index_rev+2] = buffer1[3*index+2];
             }
         }
     }
+    fwrite(diff_buff, sizeof(unsigned char), 3*nx*ny, f_out);
+    fclose(f_out);
     if (totalDiff > 0)
     {
         printf("The number of different pixels is %d\n", totalDiff);
