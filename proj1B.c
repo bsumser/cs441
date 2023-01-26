@@ -25,6 +25,7 @@ typedef struct
     int rightIdx;
     int topIdx;
     int bottomIdx;
+    int middleIdx;
     int triangleType;
 
 } Triangle;
@@ -69,6 +70,7 @@ GetTriangles(void)
        tl->triangles[i].rightIdx = 0;
        tl->triangles[i].topIdx = 0;
        tl->triangles[i].bottomIdx = 0;
+       tl->triangles[i].middleIdx = 0;
        tl->triangles[i].triangleType = -1; // variable for unset triangle type
    }
 
@@ -149,6 +151,15 @@ void determineTriangle(Triangle *triangle) {
     //arbitrary
     else {
         printf("triangle is arbitrary\n");
+
+        if (triangle->Y[triangle->bottomIdx] < triangle->Y[triangle->leftIdx] < triangle->Y[triangle->topIdx]) {
+            triangle->middleIdx = triangle->leftIdx;
+            printf("middle index is %d",triangle->middleIdx);
+        }
+        else if (triangle->Y[triangle->bottomIdx] < triangle->Y[triangle->rightIdx] < triangle->Y[triangle->topIdx]) {
+            triangle->middleIdx = triangle->rightIdx;
+            printf("middle index is %d",triangle->middleIdx);
+        }
         triangle->triangleType = 2;
     }
 }
@@ -213,17 +224,17 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     printf("Left slope is %f\n", slopeLeft);
 
     printf("Scalines go from %f to %f\n", minY, maxY);
-    for (int i = minY; i <= maxY; i++) {
+    for (int i = (int)minY; i <= (int)maxY; i++) {
         if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
         rightEnd = F441(rightEnd);
         leftEnd = C441(leftEnd);
         printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
 
-        for (int c = leftEnd; c <= rightEnd; c++) {
-            int x = 1000 - i;
+        for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
+            int x = 1000 - i - 1;
             int y = c;
-            if (x > 1000 || y > 1000 || x < 0 || y < 0) {
+            if (x >= 1000 || y >= 1000 || x <= 0 || y <= 0) {
                 printf("x = %d | y = %d\n",x,y);
                 continue;
             }
@@ -234,7 +245,7 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
 }
 
 void RasterizeGoingDownTriangle(Triangle *triangle, Image *img) {
-    printf("%s not implemented yet\n", __func__);
+    printf("%s called\n", __func__);
 }
 
 void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
@@ -318,8 +329,29 @@ int main(int argc, char* argv[])
     .bottomIdx = 0,
     .triangleType = -1};
 
-    int triangleFail = 0;
-    //for (int i = 0 ; i < 1; i++) {
+    Triangle downTriangle = {
+    .X[0] = 500.000000,
+    .X[1] = 100.000000,
+    .X[2] = 300.000000,
+    .Y[0] = 500.000000,
+    .Y[1] = 500.000000,
+    .Y[2] = 100.000000,
+    .color[0] = red.red,
+    .color[1] = red.green,
+    .color[2] = red.blue,
+
+    .leftIdx = 0,
+    .rightIdx = 0,
+    .topIdx = 0,
+    .bottomIdx = 0,
+    .triangleType = -1};
+
+
+    // Some test cases checking functions are working properly
+    //Triangle *curTriangle = &downTriangle;
+    //determineTriangle(curTriangle);
+    //RasterizeGoingDownTriangle(curTriangle, &img);
+
     for (int i = 0 ; i < tl->numTriangles; i++) {
         Triangle *curTriangle = tl->triangles+i;
         determineTriangle(curTriangle);
@@ -331,21 +363,15 @@ int main(int argc, char* argv[])
             case (1):
                 printf("rasterizing flat top triangle\n");
                 RasterizeGoingDownTriangle(curTriangle, &img);
-                triangleFail++;
                 break;
             case (2):
                 printf("rasterizing arbitrary triangle\n");
                 RasterizeArbitraryTriangle(curTriangle, &img);
-                triangleFail++;
                 break;
         }
     }
 
     writeImage(img, fp);
     fclose(fp);
-    Triangle *curTriangle = &testTriangle;
-    determineTriangle(curTriangle);
-    RasterizeGoingUpTriangle(curTriangle, &img);
-    printf("Fail count = %d\n", triangleFail);
     return 0;
 }
