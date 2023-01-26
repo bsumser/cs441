@@ -158,23 +158,15 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     printf("%s called\n", __func__);
     Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
 
-
     double minX = triangle->X[triangle->leftIdx];
     double maxX = triangle->X[triangle->rightIdx];
     double minY = C441(triangle->Y[triangle->leftIdx]);
-    double maxY = C441(triangle->Y[triangle->topIdx]);
+    double maxY = F441(triangle->Y[triangle->topIdx]);
 
     printf("X floor is %f ceil is %f\n", minX, maxX);
     printf("Y floor is %f ceil is %f\n", minY, maxY);
 
     printf("Scanlines go from %1f to %1f\n", minY, maxY);
-
-    double x1 = triangle->X[triangle->topIdx];
-    double y1 = triangle->Y[triangle->topIdx];
-    double x2 = triangle->X[triangle->leftIdx];
-    double y2 = triangle->Y[triangle->leftIdx];
-    double x3 = triangle->X[triangle->rightIdx];
-    double y3 = triangle->Y[triangle->rightIdx];
 
     //variables for left and right endpoint
     double leftEnd = -1;
@@ -185,23 +177,33 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     int updateLeft = -1;
     int updateRight = -1;
 
-    double slopeRight = (y3 - y1)/(x3 - x1);
+    double slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
+
+    //error checking for vertical slope, sets right end as the max x coordinate
     if (slopeRight == INFINITY || slopeRight == -INFINITY) {
         rightEnd = maxX;
         printf("right infinity achieved, leftEnd = %f\n", rightEnd);
         updateRight = 0;
     }
+
+    //solve y = mx + b for b with given slope, y and x values
     else {
         rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
         updateRight = 1;
     }
 
-    double slopeLeft = (y2 - y1)/(x2 - x1);
+    double slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
+
+    //error checking for vertical slope, sets left end as the max x coordinate
     if (slopeLeft == INFINITY || slopeLeft == -INFINITY) {
         leftEnd = minX;
         printf("left infinity achieved, leftEnd = %f\n", leftEnd);
         updateLeft = 0;
     }
+
+    //solve y = mx + b for b with given slope, y and x values
     else {
         leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
         updateLeft = 1;
@@ -211,14 +213,14 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     printf("Left slope is %f\n", slopeLeft);
 
     printf("Scalines go from %f to %f\n", minY, maxY);
-    for (int i = (int)minY; i <= (int)maxY; i++) {
+    for (int i = minY; i <= maxY; i++) {
         if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
         rightEnd = F441(rightEnd);
         leftEnd = C441(leftEnd);
-        printf("Scanline %d goes from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
+        printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);
 
-        for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
+        for (int c = leftEnd; c <= rightEnd; c++) {
             int x = 1000 - i;
             int y = c;
             if (x > 1000 || y > 1000 || x < 0 || y < 0) {
@@ -319,7 +321,6 @@ int main(int argc, char* argv[])
     int triangleFail = 0;
     //for (int i = 0 ; i < 1; i++) {
     for (int i = 0 ; i < tl->numTriangles; i++) {
-        //Triangle *curTriangle = &testTriangle;
         Triangle *curTriangle = tl->triangles+i;
         determineTriangle(curTriangle);
         switch(curTriangle->triangleType) {
@@ -329,7 +330,7 @@ int main(int argc, char* argv[])
                 break;
             case (1):
                 printf("rasterizing flat top triangle\n");
-                RasterizeGoingUpTriangle(curTriangle, &img);
+                RasterizeGoingDownTriangle(curTriangle, &img);
                 triangleFail++;
                 break;
             case (2):
@@ -342,6 +343,9 @@ int main(int argc, char* argv[])
 
     writeImage(img, fp);
     fclose(fp);
+    Triangle *curTriangle = &testTriangle;
+    determineTriangle(curTriangle);
+    RasterizeGoingUpTriangle(curTriangle, &img);
     printf("Fail count = %d\n", triangleFail);
     return 0;
 }
