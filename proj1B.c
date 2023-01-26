@@ -234,7 +234,7 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
             int x = 1000 - i - 1;
             int y = c;
-            if (x >= 1000 || y >= 1000 || x <= 0 || y <= 0) {
+            if (x > 1000 || y > 1000 || x < 0 || y < 0) {
                 printf("x = %d | y = %d\n",x,y);
                 continue;
             }
