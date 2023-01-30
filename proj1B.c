@@ -129,8 +129,11 @@ void determineTriangle(Triangle *triangle) {
         if (triangle->Y[bottomIdx] >= triangle->Y[i]) {
             bottomIdx = i;
         }
+        if (triangle->X[leftIdx] > triangle->X[i]) {
+            leftIdx = i;
+        }
     }
-    leftIdx = 6 - (topIdx + rightIdx + 3);
+    //leftIdx = 6 - (topIdx + rightIdx + 3);
 
     triangle->leftIdx = leftIdx;
     triangle->rightIdx = rightIdx;
@@ -322,11 +325,11 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
             int x = 1000 - i - 1;
             int y = c;
             if (x >= 1000 || y >= 1000 || x < 0 || y < 0) {
-                if (log_var == 1) {printf("x = %d | y = %d\n",x,y);}
+                if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
             if (x == 0 && y == 99)
-            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
+            if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
             img->pixels[x][y] = pixel;
         }
     }
