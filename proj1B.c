@@ -70,7 +70,7 @@ GetTriangles(void)
        tl->triangles[i].rightIdx = 0;
        tl->triangles[i].topIdx = 0;
        tl->triangles[i].bottomIdx = 0;
-       tl->triangles[i].middleIdx = 0;
+       tl->triangles[i].middleIdx = -1;
        tl->triangles[i].triangleType = -1; // variable for unset triangle type
    }
 
@@ -133,7 +133,11 @@ void determineTriangle(Triangle *triangle) {
             leftIdx = i;
         }
     }
-    //leftIdx = 6 - (topIdx + rightIdx + 3);
+
+    //determine mid index for arbitrary triangle
+    if (triangle->Y[bottomIdx] < triangle->Y[0] < triangle->Y[topIdx]) {triangle->middleIdx = 0;}
+    if (triangle->Y[bottomIdx] < triangle->Y[1] < triangle->Y[topIdx]) {triangle->middleIdx = 1;}
+    if (triangle->Y[bottomIdx] < triangle->Y[2] < triangle->Y[topIdx]) {triangle->middleIdx = 2;}
 
     triangle->leftIdx = leftIdx;
     triangle->rightIdx = rightIdx;
@@ -144,9 +148,20 @@ void determineTriangle(Triangle *triangle) {
     if (log_var == 1) {printf("top vertex index is %d at (%f,%f)\n", topIdx, triangle->X[topIdx], triangle->Y[topIdx]);}
     if (log_var == 1) {printf("right vertex index is %d at (%f,%f)\n", rightIdx, triangle->X[rightIdx], triangle->Y[rightIdx]);}
     if (log_var == 1) {printf("bottom vertex index is %d at (%f,%f)\n", bottomIdx, triangle->X[bottomIdx], triangle->Y[bottomIdx]);}
+    if (log_var == 1) {
+        if (triangle->middleIdx == -1) {printf("middle index is %d, no middle vertex", triangle->middleIdx);}
+        else {printf("middle vertex index is %d at (%f,%f)\n",
+                     triangle->middleIdx, triangle->X[triangle->middleIdx], triangle->Y[triangle->middleIdx]);}
+    }
+
+    //arbitrary
+    if (triangle->middleIdx != -1) {
+        if (log_var == 1) {printf("triangle is arbitrary\n");}
+        triangle->triangleType = 2;
+    }
 
     //flat bottom
-    if (bottomIdx == leftIdx || (bottomIdx == rightIdx)) {
+    else if (bottomIdx == leftIdx || (bottomIdx == rightIdx)) {
         if (log_var == 1) {printf("triangle is flat bottom\n");}
         triangle->triangleType = 0;
     }
@@ -155,21 +170,6 @@ void determineTriangle(Triangle *triangle) {
     else if (topIdx == leftIdx || (topIdx == rightIdx)) {
         if (log_var == 1) {printf("triangle is flat top\n");}
         triangle->triangleType = 1;
-    }
-
-    //arbitrary
-    else {
-        if (log_var == 1) {printf("triangle is arbitrary\n");}
-
-        if (triangle->Y[triangle->bottomIdx] < triangle->Y[triangle->leftIdx] < triangle->Y[triangle->topIdx]) {
-            triangle->middleIdx = triangle->leftIdx;
-            if (log_var == 1) {printf("middle index is %d",triangle->middleIdx);}
-        }
-        else if (triangle->Y[triangle->bottomIdx] < triangle->Y[triangle->rightIdx] < triangle->Y[triangle->topIdx]) {
-            triangle->middleIdx = triangle->rightIdx;
-            if (log_var == 1) {printf("middle index is %d",triangle->middleIdx);}
-        }
-        triangle->triangleType = 2;
     }
 }
 
@@ -418,6 +418,7 @@ int main(int argc, char* argv[])
     .rightIdx = 0,
     .topIdx = 0,
     .bottomIdx = 0,
+    .middleIdx = -1,
     .triangleType = -1};
 
     Triangle downTriangle = {
@@ -435,13 +436,31 @@ int main(int argc, char* argv[])
     .rightIdx = 0,
     .topIdx = 0,
     .bottomIdx = 0,
+    .middleIdx = -1,
     .triangleType = -1};
 
+    Triangle arbTriangle = {
+    .X[0] = 500.000000,
+    .X[1] = 100.000000,
+    .X[2] = 400.000000,
+    .Y[0] = 500.000000,
+    .Y[1] = 200.000000,
+    .Y[2] = 250.000000,
+    .color[0] = red.red,
+    .color[1] = red.green,
+    .color[2] = red.blue,
+
+    .leftIdx = 0,
+    .rightIdx = 0,
+    .topIdx = 0,
+    .bottomIdx = 0,
+    .middleIdx = -1,
+    .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    Triangle *curTriangle = &downTriangle;
+    Triangle *curTriangle = &arbTriangle;
     determineTriangle(curTriangle);
-    RasterizeGoingDownTriangle(curTriangle, &img);
+    if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
 
     //for (int i = 0 ; i < tl->numTriangles; i++) {
     //    Triangle *curTriangle = tl->triangles+i;
