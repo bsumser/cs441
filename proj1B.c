@@ -369,7 +369,9 @@ FILE* setFile(int width, int height, int colorRange)
 int main(int argc, char* argv[])
 {
     log_var = 0;
-    if (strcmp(argv[1], "-l") == 0) {log_var = 1;}
+    if (strcmp(argv[1], "-l") == 0) { log_var = 1; }
+    if (strcmp(argv[1], "-log") == 0) { log_var = 2; }
+    printf("Level %d logging active\n", log_var);
     printf("triangulator running\n");
 
     int width = 1000;
