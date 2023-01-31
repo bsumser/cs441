@@ -119,6 +119,8 @@ void determineTriangle(Triangle *triangle) {
     int topIdx = 0;
     int rightIdx = 0;
     int bottomIdx = 0;
+    int top = 0;
+    int bot = 0;
     for (int i = 0; i < 3; i++) {
         if (triangle->Y[topIdx] < triangle->Y[i]) {
             topIdx = i;
@@ -134,25 +136,21 @@ void determineTriangle(Triangle *triangle) {
         }
     }
 
-    //determine mid index for arbitrary triangle
-    if (triangle->Y[bottomIdx] < triangle->Y[0] < triangle->Y[topIdx]) {triangle->middleIdx = 0;}
-    if (triangle->Y[bottomIdx] < triangle->Y[1] < triangle->Y[topIdx]) {triangle->middleIdx = 1;}
-    if (triangle->Y[bottomIdx] < triangle->Y[2] < triangle->Y[topIdx]) {triangle->middleIdx = 2;}
+
+    for (int i = 0; i < 3; i++) {
+        if ((triangle->Y[bottomIdx] < triangle->Y[i]) && (triangle->Y[i] < triangle->Y[topIdx]))
+        {triangle->middleIdx = i;}
+    }
+
+    for (int i = 0; i < 3; i++) {
+        if (triangle->Y[topIdx] > triangle->Y[i]) {top++;}
+        if (triangle->Y[bottomIdx] < triangle->Y[i]) {bot++;}
+    }
 
     triangle->leftIdx = leftIdx;
     triangle->rightIdx = rightIdx;
     triangle->topIdx = topIdx;
     triangle->bottomIdx = bottomIdx;
-
-    if (log_var == 1) {printf("left vertex index is %d at (%f,%f)\n", leftIdx, triangle->X[leftIdx], triangle->Y[leftIdx]);}
-    if (log_var == 1) {printf("top vertex index is %d at (%f,%f)\n", topIdx, triangle->X[topIdx], triangle->Y[topIdx]);}
-    if (log_var == 1) {printf("right vertex index is %d at (%f,%f)\n", rightIdx, triangle->X[rightIdx], triangle->Y[rightIdx]);}
-    if (log_var == 1) {printf("bottom vertex index is %d at (%f,%f)\n", bottomIdx, triangle->X[bottomIdx], triangle->Y[bottomIdx]);}
-    if (log_var == 1) {
-        if (triangle->middleIdx == -1) {printf("middle index is %d, no middle vertex", triangle->middleIdx);}
-        else {printf("middle vertex index is %d at (%f,%f)\n",
-                     triangle->middleIdx, triangle->X[triangle->middleIdx], triangle->Y[triangle->middleIdx]);}
-    }
 
     //arbitrary
     if (triangle->middleIdx != -1) {
@@ -161,16 +159,37 @@ void determineTriangle(Triangle *triangle) {
     }
 
     //flat bottom
-    else if (bottomIdx == leftIdx || (bottomIdx == rightIdx)) {
+    else if (top == 2){
         if (log_var == 1) {printf("triangle is flat bottom\n");}
         triangle->triangleType = 0;
+        for (int i = 0; i < 3; i++) {
+            if (triangle->Y[i] < triangle->Y[triangle->rightIdx] && triangle->X[i] > triangle->X[triangle->rightIdx]) {
+                triangle->rightIdx = i;
+            }
+            if (triangle->Y[i] < triangle->Y[triangle->leftIdx] && triangle->X[i] < triangle->X[triangle->rightIdx]) {
+                triangle->leftIdx = i;
+            }
+        }
     }
 
     //flat top
-    else if (topIdx == leftIdx || (topIdx == rightIdx)) {
+    else if (bot == 2) {
         if (log_var == 1) {printf("triangle is flat top\n");}
         triangle->triangleType = 1;
+        for (int i = 0; i < 3; i++) {
+            if (triangle->Y[i] > triangle->Y[triangle->rightIdx] && triangle->X[i] > triangle->X[triangle->rightIdx]) {
+                triangle->rightIdx = i;
+            }
+            if (triangle->Y[i] > triangle->Y[triangle->leftIdx] && triangle->X[i] < triangle->X[triangle->rightIdx]) {
+                triangle->leftIdx = i;
+            }
+        }
     }
+
+    if (log_var == 1) {printf("left vertex index is %d at (%f,%f)\n", triangle->leftIdx, triangle->X[triangle->leftIdx], triangle->Y[triangle->leftIdx]);}
+    if (log_var == 1) {printf("top vertex index is %d at (%f,%f)\n", triangle->topIdx, triangle->X[triangle->topIdx], triangle->Y[triangle->topIdx]);}
+    if (log_var == 1) {printf("right vertex index is %d at (%f,%f)\n", triangle->rightIdx, triangle->X[triangle->rightIdx], triangle->Y[triangle->rightIdx]);}
+    if (log_var == 1) {printf("bottom vertex index is %d at (%f,%f)\n", triangle->bottomIdx, triangle->X[triangle->bottomIdx], triangle->Y[triangle->bottomIdx]);}
 }
 
 void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
@@ -180,7 +199,7 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
 
     double minX = triangle->X[triangle->leftIdx];
     double maxX = triangle->X[triangle->rightIdx];
-    double minY = C441(triangle->Y[triangle->leftIdx]);
+    double minY = C441(triangle->Y[triangle->bottomIdx]);
     double maxY = F441(triangle->Y[triangle->topIdx]);
 
     if (log_var == 1) {printf("X floor is %f ceil is %f\n", minX, maxX);}
@@ -194,37 +213,38 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
     double leftB = 0;
     double rightB = 0;
 
+    double slopeLeft = 0;
+    double slopeRight = 0;
+
     int updateLeft = -1;
     int updateRight = -1;
 
-    double slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
 
+    //TODO:Fix this from outputting all right triangles
     //error checking for vertical slope, sets right end as the max x coordinate
-    if (slopeRight == INFINITY || slopeRight == -INFINITY) {
+    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->topIdx]) {
         rightEnd = maxX;
-        if (log_var == 1) {printf("right infinity achieved, leftEnd = %f\n", rightEnd);}
         updateRight = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
+        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
         rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
         updateRight = 1;
     }
 
-    double slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
-
     //error checking for vertical slope, sets left end as the max x coordinate
-    if (slopeLeft == INFINITY || slopeLeft == -INFINITY) {
+    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->topIdx]) {
         leftEnd = minX;
-        if (log_var == 1) {printf("left infinity achieved, leftEnd = %f\n", leftEnd);}
         updateLeft = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
+        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
         leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
         updateLeft = 1;
     }
@@ -238,17 +258,17 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
         rightEnd = F441(rightEnd);
         leftEnd = C441(leftEnd);
-        if (log_var == 1) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
+        if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
             int x = 1000 - i - 1;
             int y = c;
             if (x >= 1000 || y >= 1000 || x < 0 || y < 0) {
-                if (log_var == 1) {printf("x = %d | y = %d\n",x,y);}
+                if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
             if (x == 0 && y == 99)
-            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
+            if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
             img->pixels[x][y] = pixel;
         }
     }
@@ -374,6 +394,12 @@ int main(int argc, char* argv[])
     printf("Level %d logging active\n", log_var);
     printf("triangulator running\n");
 
+
+    int upTriangleCount = 0;
+    int downTriangleCount = 0;
+    int arbTriangleCount = 0;
+    int failTriangleCount = 0;
+
     int width = 1000;
     int height = 1000;
     int colorRange = 255;
@@ -458,28 +484,39 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    Triangle *curTriangle = &arbTriangle;
-    determineTriangle(curTriangle);
-    if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
+    //Triangle *curTriangle = &testTriangle;
+    //determineTriangle(curTriangle);
+    //if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
 
-    //for (int i = 0 ; i < tl->numTriangles; i++) {
-    //    Triangle *curTriangle = tl->triangles+i;
-    //    determineTriangle(curTriangle);
-    //    switch(curTriangle->triangleType) {
-    //        case (0):
-    //            if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
-    //            RasterizeGoingUpTriangle(curTriangle, &img);
-    //            break;
-    //        case (1):
-    //            if (log_var == 1) {printf("rasterizing flat top triangle\n");}
-    //            RasterizeGoingDownTriangle(curTriangle, &img);
-    //            break;
-    //        case (2):
-    //            if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
-    //            RasterizeArbitraryTriangle(curTriangle, &img);
-    //            break;
-    //    }
-    //}
+    for (int i = 0 ; i < tl->numTriangles; i++) {
+        Triangle *curTriangle = tl->triangles+i;
+        determineTriangle(curTriangle);
+        switch(curTriangle->triangleType) {
+            case (0):
+                if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
+                RasterizeGoingUpTriangle(curTriangle, &img);
+                upTriangleCount++;
+                break;
+            case (1):
+                if (log_var == 1) {printf("rasterizing flat top triangle\n");}
+                RasterizeGoingDownTriangle(curTriangle, &img);
+                downTriangleCount++;
+                break;
+            case (2):
+                if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
+                RasterizeArbitraryTriangle(curTriangle, &img);
+                arbTriangleCount++;
+                break;
+            default:
+                printf("Unable to determine Triangle Type\n");
+                break;
+        }
+    }
+
+    printf("Triangles counted:\n");
+    printf("Up: %d\n",upTriangleCount);
+    printf("Down: %d\n",downTriangleCount);
+    printf("Arbitrary: %d\n",arbTriangleCount);
 
     writeImage(img, fp);
     fclose(fp);
