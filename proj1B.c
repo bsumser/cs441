@@ -295,37 +295,38 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
     double leftB = 0;
     double rightB = 0;
 
+    double slopeLeft = 0;
+    double slopeRight = 0;
+
     int updateLeft = -1;
     int updateRight = -1;
 
-    double slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->bottomIdx])
-        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->bottomIdx]);
 
+    //TODO:Fix this from outputting all right triangles
     //error checking for vertical slope, sets right end as the max x coordinate
-    if (slopeRight == INFINITY || slopeRight == -INFINITY) {
+    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->topIdx]) {
         rightEnd = maxX;
-        if (log_var == 1) {printf("right infinity achieved, leftEnd = %f\n", rightEnd);}
         updateRight = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
+        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
         rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
         updateRight = 1;
     }
 
-    double slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->bottomIdx])
-        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->bottomIdx]);
-
     //error checking for vertical slope, sets left end as the max x coordinate
-    if (slopeLeft == INFINITY || slopeLeft == -INFINITY) {
+    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->topIdx]) {
         leftEnd = minX;
-        if (log_var == 1) {printf("left infinity achieved, leftEnd = %f\n", leftEnd);}
         updateLeft = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
+        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
         leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
         updateLeft = 1;
     }
@@ -339,7 +340,7 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
         if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
         rightEnd = F441(rightEnd);
         leftEnd = C441(leftEnd);
-        if (log_var == 1) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
+        if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
             int x = 1000 - i - 1;
