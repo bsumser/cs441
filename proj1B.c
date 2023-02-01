@@ -361,6 +361,8 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
     double minY = C441(triangle->Y[triangle->bottomIdx]);
     double maxY = F441(triangle->Y[triangle->middleIdx]);
     double topBotSlope = 0;
+    double topMidSlope = 0;
+    double botMidSlope = 0;
     double topBotIntercept = 0;
     double topMidIntercept = 0;
     double botMidIntercept = 0;
@@ -370,9 +372,9 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
     if (triangle->X[triangle->leftIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->rightIdx]) {
         if (log_var == 1) { printf("triangle goes to the right\n"); }
 
-        double topBotSlope = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->rightIdx])
-        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->rightIdx]);
-        double topBotIntercept = -topBotSlope * triangle->X[triangle->middleIdx] + triangle->Y[triangle->middleIdx];
+        double topBotSlope = (triangle->Y[triangle->topIdx] - triangle->Y[triangle->bottomIdx])
+        / (triangle->X[triangle->topIdx] - triangle->X[triangle->bottomIdx]);
+        double topBotIntercept = -topBotSlope * triangle->X[triangle->bottomIdx] + triangle->Y[triangle->bottomIdx];
 
         if (log_var == 1) { printf("topBotSlope: %f\nLeft b: %f\n", topBotSlope, topBotIntercept); }
     }
