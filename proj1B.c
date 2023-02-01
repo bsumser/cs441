@@ -304,29 +304,29 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
 
     //TODO:Fix this from outputting all right triangles
     //error checking for vertical slope, sets right end as the max x coordinate
-    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->topIdx]) {
+    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->bottomIdx]) {
         rightEnd = maxX;
         updateRight = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
-        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
+        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->bottomIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->bottomIdx]);
         rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
         updateRight = 1;
     }
 
     //error checking for vertical slope, sets left end as the max x coordinate
-    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->topIdx]) {
+    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->bottomIdx]) {
         leftEnd = minX;
         updateLeft = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
-        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
+        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->bottomIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->bottomIdx]);
         leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
         updateLeft = 1;
     }
@@ -485,34 +485,36 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    //Triangle *curTriangle = &testTriangle;
-    //determineTriangle(curTriangle);
-    //if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
+    Triangle *curTriangle = &downTriangle;
+    determineTriangle(curTriangle);
+    if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
+    if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
+    if (curTriangle->triangleType == 0) { RasterizeGoingUpTriangle(curTriangle, &img); }
 
-    for (int i = 0 ; i < tl->numTriangles; i++) {
-        Triangle *curTriangle = tl->triangles+i;
-        determineTriangle(curTriangle);
-        switch(curTriangle->triangleType) {
-            case (0):
-                if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
-                RasterizeGoingUpTriangle(curTriangle, &img);
-                upTriangleCount++;
-                break;
-            case (1):
-                if (log_var == 1) {printf("rasterizing flat top triangle\n");}
-                RasterizeGoingDownTriangle(curTriangle, &img);
-                downTriangleCount++;
-                break;
-            case (2):
-                if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
-                RasterizeArbitraryTriangle(curTriangle, &img);
-                arbTriangleCount++;
-                break;
-            default:
-                printf("Unable to determine Triangle Type\n");
-                break;
-        }
-    }
+    //for (int i = 0 ; i < tl->numTriangles; i++) {
+    //    Triangle *curTriangle = tl->triangles+i;
+    //    determineTriangle(curTriangle);
+    //    switch(curTriangle->triangleType) {
+    //        case (0):
+    //            if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
+    //            RasterizeGoingUpTriangle(curTriangle, &img);
+    //            upTriangleCount++;
+    //            break;
+    //        case (1):
+    //            if (log_var == 1) {printf("rasterizing flat top triangle\n");}
+    //            RasterizeGoingDownTriangle(curTriangle, &img);
+    //            downTriangleCount++;
+    //            break;
+    //        case (2):
+    //            if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
+    //            RasterizeArbitraryTriangle(curTriangle, &img);
+    //            arbTriangleCount++;
+    //            break;
+    //        default:
+    //            printf("Unable to determine Triangle Type\n");
+    //            break;
+    //    }
+    //}
 
     printf("Triangles counted:\n");
     printf("Up: %d\n",upTriangleCount);
