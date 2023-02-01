@@ -302,7 +302,6 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
     int updateRight = -1;
 
 
-    //TODO:Fix this from outputting all right triangles
     //error checking for vertical slope, sets right end as the max x coordinate
     if (triangle->X[triangle->rightIdx] == triangle->X[triangle->bottomIdx]) {
         rightEnd = maxX;
@@ -357,7 +356,45 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
 }
 
 void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
-    if (log_var == 1) {printf("%s not implemented yet\n", __func__);}
+    if (log_var == 1) {printf("%s called\n", __func__);}
+
+    double minY = C441(triangle->Y[triangle->bottomIdx]);
+    double maxY = F441(triangle->Y[triangle->middleIdx]);
+    double topBotSlope = 0;
+    double topBotIntercept = 0;
+    double topMidIntercept = 0;
+    double botMidIntercept = 0;
+
+    if (log_var == 1) { printf("Rasterizing from %f to %f\n", minY, maxY); }
+
+    if (triangle->X[triangle->leftIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->rightIdx]) {
+        if (log_var == 1) { printf("triangle goes to the right\n"); }
+
+        double topBotSlope = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->rightIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->rightIdx]);
+        double topBotIntercept = -topBotSlope * triangle->X[triangle->middleIdx] + triangle->Y[triangle->middleIdx];
+
+        if (log_var == 1) { printf("topBotSlope: %f\nLeft b: %f\n", topBotSlope, topBotIntercept); }
+    }
+
+    else if (triangle->X[triangle->rightIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->leftIdx]) {
+        if (log_var == 1) { printf("triangle goes to the left\n"); }
+
+        double slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->leftIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->leftIdx]);
+
+        double topBotIntercept = -topBotSlope * triangle->X[triangle->middleIdx] + triangle->Y[triangle->middleIdx];
+
+        if (log_var == 1) { printf("slopeRight: %f\n", slopeRight); }
+    }
+
+    for (int i = (int)minY; i <= (int)maxY; i++) {
+
+        //top of "bot" triangle hit, adjust maxY
+        if (i == maxY) { maxY = F441(triangle->Y[triangle->topIdx]); }
+        double minX = (i - topBotIntercept) / topBotSlope;
+        if (log_var == 1) { printf("Scanline %d goes from \n", i); }
+    }
 }
 
 
@@ -485,7 +522,7 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    Triangle *curTriangle = &downTriangle;
+    Triangle *curTriangle = &arbTriangle;
     determineTriangle(curTriangle);
     if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
     if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
