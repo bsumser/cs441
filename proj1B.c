@@ -86,10 +86,6 @@ typedef struct
 }Pixel;
 
 
-typedef struct
-{
-    Pixel pixels[1000][1000];
-}Image;
 
 //declare all pixel colors used
 Pixel black = {.red = 0, .green = 0, .blue = 0};
