@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define HEIGHT 1000
+#define WIDTH 1000
+
 
 /*------------------------STARTER CODE-------------------------------------------*/
 double C441(double f)
@@ -43,7 +46,7 @@ GetTriangles(void)
    tl->numTriangles = 100;
    tl->triangles = (Triangle *) malloc(sizeof(Triangle)*tl->numTriangles);
 
-   unsigned char colors[6][3] = { {255,128,0}, {255, 0, 127}, {0,204,204}, 
+   unsigned char colors[6][3] = { {255,128,0}, {255, 0, 127}, {0,204,204},
                                   {76,153,0}, {255, 204, 204}, {204, 204, 0}};
    for (int i = 0 ; i < 100 ; i++)
    {
@@ -86,6 +89,10 @@ typedef struct
 }Pixel;
 
 
+typedef struct
+{
+    Pixel pixels[HEIGHT][WIDTH];
+}Image;
 
 //declare all pixel colors used
 Pixel black = {.red = 0, .green = 0, .blue = 0};
@@ -182,10 +189,13 @@ void determineTriangle(Triangle *triangle) {
         }
     }
 
-    if (log_var == 1) {printf("left vertex index is %d at (%f,%f)\n", triangle->leftIdx, triangle->X[triangle->leftIdx], triangle->Y[triangle->leftIdx]);}
-    if (log_var == 1) {printf("top vertex index is %d at (%f,%f)\n", triangle->topIdx, triangle->X[triangle->topIdx], triangle->Y[triangle->topIdx]);}
-    if (log_var == 1) {printf("right vertex index is %d at (%f,%f)\n", triangle->rightIdx, triangle->X[triangle->rightIdx], triangle->Y[triangle->rightIdx]);}
-    if (log_var == 1) {printf("bottom vertex index is %d at (%f,%f)\n", triangle->bottomIdx, triangle->X[triangle->bottomIdx], triangle->Y[triangle->bottomIdx]);}
+    if (log_var == 1) {
+        printf("left vertex index is %d at (%f,%f)\n", triangle->leftIdx, triangle->X[triangle->leftIdx], triangle->Y[triangle->leftIdx]);
+        printf("top vertex index is %d at (%f,%f)\n", triangle->topIdx, triangle->X[triangle->topIdx], triangle->Y[triangle->topIdx]);
+        printf("right vertex index is %d at (%f,%f)\n", triangle->rightIdx, triangle->X[triangle->rightIdx], triangle->Y[triangle->rightIdx]);
+        printf("bottom vertex index is %d at (%f,%f)\n", triangle->bottomIdx, triangle->X[triangle->bottomIdx], triangle->Y[triangle->bottomIdx]);
+        printf("middle vertex index is %d at (%f,%f)\n", triangle->middleIdx, triangle->X[triangle->middleIdx], triangle->Y[triangle->middleIdx]);
+    }
 }
 
 void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
@@ -257,9 +267,9 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            int x = 1000 - i - 1;
+            int x = HEIGHT - i - 1;
             int y = c;
-            if (x >= 1000 || y >= 1000 || x < 0 || y < 0) {
+            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
                 if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
@@ -338,9 +348,9 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            int x = 1000 - i - 1;
+            int x = HEIGHT - i - 1;
             int y = c;
-            if (x >= 1000 || y >= 1000 || x < 0 || y < 0) {
+            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
                 if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
@@ -354,47 +364,73 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
 void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
     if (log_var == 1) {printf("%s called\n", __func__);}
 
+    //set pixel to be inserted
+    Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
+
     double minY = C441(triangle->Y[triangle->bottomIdx]);
-    double maxY = F441(triangle->Y[triangle->middleIdx]);
+    double maxY = F441(triangle->Y[triangle->topIdx]);
+    double minX = 0;
+    double maxX = 0;
     double topBotSlope = 0;
     double topMidSlope = 0;
     double botMidSlope = 0;
     double topBotIntercept = 0;
     double topMidIntercept = 0;
     double botMidIntercept = 0;
+    int goingRight = -1;
+    int goingLeft = -1;
 
     if (log_var == 1) { printf("Rasterizing from %f to %f\n", minY, maxY); }
 
-    if (triangle->X[triangle->leftIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->rightIdx]) {
-        if (log_var == 1) { printf("triangle goes to the right\n"); }
+    topBotSlope = (triangle->Y[triangle->topIdx] - triangle->Y[triangle->bottomIdx])
+    / (triangle->X[triangle->topIdx] - triangle->X[triangle->bottomIdx]);
+    topBotIntercept = -topBotSlope * triangle->X[triangle->bottomIdx] + triangle->Y[triangle->bottomIdx];
 
-        double topBotSlope = (triangle->Y[triangle->topIdx] - triangle->Y[triangle->bottomIdx])
-        / (triangle->X[triangle->topIdx] - triangle->X[triangle->bottomIdx]);
-        double topBotIntercept = -topBotSlope * triangle->X[triangle->bottomIdx] + triangle->Y[triangle->bottomIdx];
+    topMidSlope = (triangle->Y[triangle->topIdx] - triangle->Y[triangle->middleIdx])
+    / (triangle->X[triangle->topIdx] - triangle->X[triangle->middleIdx]);
+    topMidIntercept = -topMidSlope * triangle->X[triangle->middleIdx] + triangle->Y[triangle->middleIdx];
 
-        if (log_var == 1) { printf("topBotSlope: %f\nLeft b: %f\n", topBotSlope, topBotIntercept); }
+    botMidSlope = (triangle->Y[triangle->middleIdx] - triangle->Y[triangle->bottomIdx])
+    / (triangle->X[triangle->middleIdx] - triangle->X[triangle->bottomIdx]);
+    botMidIntercept = -botMidSlope * triangle->X[triangle->bottomIdx] + triangle->Y[triangle->bottomIdx];
+
+    if (log_var == 1) {
+        printf("topBotSlope: %f\n topBotIntercept: %f\n", topBotSlope, topBotIntercept);
+        printf("topMidSlope: %f\n topMidIntercept: %f\n", topMidSlope, topMidIntercept);
+        printf("botMidSlope: %f\n botMidIntercept: %f\n", botMidSlope, botMidIntercept);
     }
 
-    else if (triangle->X[triangle->rightIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->leftIdx]) {
-        if (log_var == 1) { printf("triangle goes to the left\n"); }
-
-        double slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->leftIdx])
-        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->leftIdx]);
-
-        double topBotIntercept = -topBotSlope * triangle->X[triangle->middleIdx] + triangle->Y[triangle->middleIdx];
-
-        if (log_var == 1) { printf("slopeRight: %f\n", slopeRight); }
+    if (triangle->X[triangle->bottomIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->topIdx]) {
+        goingRight = 1;
+    }
+    else {
+        goingLeft = 1;
     }
 
     for (int i = (int)minY; i <= (int)maxY; i++) {
 
-        //top of "bot" triangle hit, adjust maxY
-        if (i == maxY) { maxY = F441(triangle->Y[triangle->topIdx]); }
-        double minX = (i - topBotIntercept) / topBotSlope;
-        if (log_var == 1) { printf("Scanline %d goes from \n", i); }
+        if (goingRight == 1) {
+            minX = C441((i - topBotIntercept) / topBotSlope);
+            maxX = F441((i - botMidIntercept) / botMidSlope);
+        }
+
+        //update slope when moving past middle of triangle
+        if (i > triangle->Y[triangle->middleIdx]) { maxX = F441((i - topMidIntercept) / topMidSlope);}
+        if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, minX, maxX); }
+
+        for ( int c = (int)minX; c <= (int)maxX; c++) {
+            int x = HEIGHT - i - 1;
+            int y = c;
+            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
+                if (log_var == 1) {printf("x = %d | y = %d\n",x,y);}
+                continue;
+            }
+            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
+            img->pixels[x][y] = pixel;
+
+        }
     }
 }
-
 
 void writeImage(Image image, FILE *fp)
 {
@@ -436,16 +472,14 @@ int main(int argc, char* argv[])
     int arbTriangleCount = 0;
     int failTriangleCount = 0;
 
-    int width = 1000;
-    int height = 1000;
     int colorRange = 255;
 
     TriangleList *tl = GetTriangles();
 
     Image img;
 
-    for (int i = 0; i < 1000; i++) {
-        for (int j = 0; j < 1000; j++) {
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
             img.pixels[i][j] = black;
         }
     }
@@ -462,7 +496,7 @@ int main(int argc, char* argv[])
     }
 
     fprintf(fp, "P6\n");
-    fprintf(fp, "%d %d\n", width, height);
+    fprintf(fp, "%d %d\n", WIDTH, HEIGHT);
     fprintf(fp, "%d\n", colorRange);
 
     Triangle testTriangle = {
