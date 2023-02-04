@@ -5,7 +5,6 @@
 #define HEIGHT 1000
 #define WIDTH 1000
 
-
 /*------------------------STARTER CODE-------------------------------------------*/
 double C441(double f)
 {
@@ -273,7 +272,6 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
                 if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
-            if (x == 0 && y == 99)
             if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
             img->pixels[x][y] = pixel;
         }
@@ -354,7 +352,6 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
                 if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
-            if (x == 0 && y == 99)
             if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
             img->pixels[x][y] = pixel;
         }
@@ -419,23 +416,23 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
         if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, minX, maxX); }
 
         for ( int c = (int)minX; c <= (int)maxX; c++) {
-            int x = HEIGHT - i - 1;
-            int y = c;
-            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
-                if (log_var == 1) {printf("x = %d | y = %d\n",x,y);}
+            int row = HEIGHT - i - 1;
+            int col = c;
+            if (row >= HEIGHT || col >= WIDTH || row < 0 || col < 0) {
+                if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
                 continue;
             }
-            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
-            img->pixels[x][y] = pixel;
+            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", row, col);}
+            img->pixels[row][col] = pixel;
 
         }
     }
 }
 
-void writeImage(Image image, FILE *fp)
+void writeImage(Image *image, FILE *fp)
 {
     printf("%s called, writing the image file\n", __func__);
-    fwrite(&image, sizeof(image), 1, fp);
+    fwrite(image, sizeof(&image), 1, fp);
 }
 
 FILE* setFile(int width, int height, int colorRange)
@@ -496,7 +493,7 @@ int main(int argc, char* argv[])
     }
 
     fprintf(fp, "P6\n");
-    fprintf(fp, "%d %d\n", WIDTH, HEIGHT);
+    fprintf(fp, "%d %d\n", HEIGHT, WIDTH);
     fprintf(fp, "%d\n", colorRange);
 
     Triangle testTriangle = {
@@ -554,7 +551,7 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    Triangle *curTriangle = &arbTriangle;
+    Triangle *curTriangle = &(arbTriangle);
     determineTriangle(curTriangle);
     if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
     if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
@@ -590,7 +587,7 @@ int main(int argc, char* argv[])
     printf("Down: %d\n",downTriangleCount);
     printf("Arbitrary: %d\n",arbTriangleCount);
 
-    writeImage(img, fp);
+    fwrite(&img, sizeof(img), 1, fp);
     fclose(fp);
     return 0;
 }
