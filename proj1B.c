@@ -3,8 +3,8 @@
 #include <math.h>
 #include <string.h>
 
-#define HEIGHT 1344
-#define WIDTH 1786
+#define NUM_ROWS 1344
+#define NUM_COLS 1786
 
 /*------------------------STARTER CODE-------------------------------------------*/
 double C441(double f)
@@ -91,7 +91,7 @@ typedef struct
 
 typedef struct
 {
-    Pixel pixels[HEIGHT][WIDTH];
+    Pixel pixels[NUM_ROWS][NUM_COLS];
 }Image;
 
 //declare all pixel colors used
@@ -267,9 +267,9 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img)
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            int x = HEIGHT - i - 1;
+            int x = NUM_ROWS - i - 1;
             int y = c;
-            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
+            if (x >= NUM_ROWS || y >= NUM_COLS || x < 0 || y < 0) {
                 if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
                 continue;
             }
@@ -347,9 +347,9 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
         for ( int c = (int)minX; c <= (int)maxX; c++) {
-            int row = HEIGHT - i - 1;
+            int row = NUM_ROWS - i - 1;
             int col = c;
-            if (row >= HEIGHT || col >= WIDTH || row < 0 || col < 0) {
+            if (row >= NUM_ROWS || col >= NUM_COLS || row < 0 || col < 0) {
                 if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
                 continue;
             }
@@ -418,9 +418,9 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img) {
         if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, minX, maxX); }
 
         for ( int c = (int)minX; c <= (int)maxX; c++) {
-            int row = HEIGHT - i - 1;
+            int row = NUM_ROWS - i - 1;
             int col = c;
-            if (row >= HEIGHT || col >= WIDTH || row < 0 || col < 0) {
+            if (row >= NUM_ROWS || col >= NUM_COLS || row < 0 || col < 0) {
                 if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
                 continue;
             }
@@ -477,8 +477,8 @@ int main(int argc, char* argv[])
 
     Image img;
 
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
+    for (int i = 0; i < NUM_ROWS; i++) {
+        for (int j = 0; j < NUM_COLS; j++) {
             img.pixels[i][j] = black;
         }
     }
@@ -495,7 +495,7 @@ int main(int argc, char* argv[])
     }
 
     fprintf(fp, "P6\n");
-    fprintf(fp, "%d %d\n", WIDTH, HEIGHT);
+    fprintf(fp, "%d %d\n", NUM_COLS, NUM_ROWS);
     fprintf(fp, "%d\n", colorRange);
 
     Triangle testTriangle = {
