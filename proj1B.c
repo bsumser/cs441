@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
-#define HEIGHT 1000
-#define WIDTH 1000
+#define HEIGHT 1786
+#define WIDTH 1344
 
 /*------------------------STARTER CODE-------------------------------------------*/
 double C441(double f)
@@ -345,15 +346,16 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img)
         leftEnd = C441(leftEnd);
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
-        for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            int x = HEIGHT - i - 1;
-            int y = c;
-            if (x >= HEIGHT || y >= WIDTH || x < 0 || y < 0) {
-                if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
+        for ( int c = (int)minX; c <= (int)maxX; c++) {
+            int row = HEIGHT - i - 1;
+            int col = c;
+            if (row >= HEIGHT || col >= WIDTH || row < 0 || col < 0) {
+                if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
                 continue;
             }
-            if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
-            img->pixels[x][y] = pixel;
+            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", row, col);}
+            img->pixels[row][col] = pixel;
+
         }
     }
 }
@@ -551,36 +553,36 @@ int main(int argc, char* argv[])
     .triangleType = -1};
 
     // Some test cases checking functions are working properly
-    Triangle *curTriangle = &(arbTriangle);
-    determineTriangle(curTriangle);
-    if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
-    if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
-    if (curTriangle->triangleType == 0) { RasterizeGoingUpTriangle(curTriangle, &img); }
+    //Triangle *curTriangle = &(arbTriangle);
+    //determineTriangle(curTriangle);
+    //if (curTriangle->triangleType == 2) { RasterizeArbitraryTriangle(curTriangle, &img); }
+    //if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
+    //if (curTriangle->triangleType == 0) { RasterizeGoingUpTriangle(curTriangle, &img); }
 
-    //for (int i = 0 ; i < tl->numTriangles; i++) {
-    //    Triangle *curTriangle = tl->triangles+i;
-    //    determineTriangle(curTriangle);
-    //    switch(curTriangle->triangleType) {
-    //        case (0):
-    //            if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
-    //            RasterizeGoingUpTriangle(curTriangle, &img);
-    //            upTriangleCount++;
-    //            break;
-    //        case (1):
-    //            if (log_var == 1) {printf("rasterizing flat top triangle\n");}
-    //            RasterizeGoingDownTriangle(curTriangle, &img);
-    //            downTriangleCount++;
-    //            break;
-    //        case (2):
-    //            if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
-    //            RasterizeArbitraryTriangle(curTriangle, &img);
-    //            arbTriangleCount++;
-    //            break;
-    //        default:
-    //            printf("Unable to determine Triangle Type\n");
-    //            break;
-    //    }
-    //}
+    for (int i = 0 ; i < tl->numTriangles; i++) {
+        Triangle *curTriangle = tl->triangles+i;
+        determineTriangle(curTriangle);
+        switch(curTriangle->triangleType) {
+            case (0):
+                if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
+                RasterizeGoingUpTriangle(curTriangle, &img);
+                upTriangleCount++;
+                break;
+            case (1):
+                if (log_var == 1) {printf("rasterizing flat top triangle\n");}
+                RasterizeGoingDownTriangle(curTriangle, &img);
+                downTriangleCount++;
+                break;
+            case (2):
+                if (log_var == 1) {printf("rasterizing arbitrary triangle\n");}
+                RasterizeArbitraryTriangle(curTriangle, &img);
+                arbTriangleCount++;
+                break;
+            default:
+                printf("Unable to determine Triangle Type\n");
+                break;
+        }
+    }
 
     printf("Triangles counted:\n");
     printf("Up: %d\n",upTriangleCount);
