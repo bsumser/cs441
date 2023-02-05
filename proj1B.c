@@ -3,8 +3,8 @@
 #include <math.h>
 #include <string.h>
 
-#define HEIGHT 1786
-#define WIDTH 1344
+#define HEIGHT 1344
+#define WIDTH 1786
 
 /*------------------------STARTER CODE-------------------------------------------*/
 double C441(double f)
@@ -495,7 +495,7 @@ int main(int argc, char* argv[])
     }
 
     fprintf(fp, "P6\n");
-    fprintf(fp, "%d %d\n", HEIGHT, WIDTH);
+    fprintf(fp, "%d %d\n", WIDTH, HEIGHT);
     fprintf(fp, "%d\n", colorRange);
 
     Triangle testTriangle = {
