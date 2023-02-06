@@ -311,7 +311,6 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img, int triangleNum)
     int updateRight = -1;
 
 
-    //TODO:Fix this from outputting all right triangles
     //error checking for vertical slope, sets right end as the max x coordinate
     if (triangle->X[triangle->rightIdx] == triangle->X[triangle->topIdx]) {
         rightEnd = maxX;
@@ -518,8 +517,18 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
             rightEnd = F441((i - botMidIntercept) / botMidSlope);
         }
 
+        if (goingLeft == 1) {
+            leftEnd = C441((i - botMidIntercept) / botMidSlope);
+            rightEnd = F441((i - topBotIntercept) / topBotSlope);
+        }
+
         //update slope when moving past middle of triangle
-        if (i > triangle->Y[triangle->middleIdx]) { rightEnd = F441((i - topMidIntercept) / topMidSlope);}
+        if (i > triangle->Y[triangle->middleIdx] && goingRight == 1) {
+            rightEnd = F441((i - topMidIntercept) / topMidSlope);
+        }
+        if (i > triangle->Y[triangle->middleIdx] && goingLeft == 1) {
+            leftEnd = F441((i - topMidIntercept) / topMidSlope);
+        }
         if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, leftEnd, rightEnd); }
 
         for ( int c = (int)leftEnd; c <= (int)rightEnd; c++) {
