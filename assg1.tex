@@ -1,0 +1,93 @@
+%This is my super simple Real Analysis Homework template
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[]{amsthm} %lets us use \begin{proof}
+\usepackage[]{amssymb} %gives us the character \varnothing
+
+\title{Assignment 3}
+\author{Brett Sumser}
+\date\today
+%This information doesn't actually show up on your document unless you use the maketitle command below
+
+\begin{document}
+\maketitle %This command prints the title based on information entered above
+
+
+\section*{Problem 1}
+
+\subsection{Breadth First Search}
+\begin{enumerate}
+\item q $\, \to\,$ r s
+\item r $\, \to\,$ t u v; s $\, \to\,$ t, w
+\item t $\, \to\,$ u x; u $\, \to\,$ v, y; v $\, \to\,$ y; w $\, \to\,$ x
+\item x $\, \to\,$ y; y $\, \to\,$ NULL
+
+  The full sequence is: q r s t u v w x y
+\end{enumerate}
+
+
+\subsection{Depth First Search}
+\begin{enumerate}
+\item q $\, \to\,$ s
+\item s $\, \to\,$ v
+\item v $\, \to\,$ w
+\item q $\, \to\,$ t
+\item t $\, \to\,$ x
+\item x $\, \to\,$ z
+\item t $\, \to\,$ y
+\item r $\, \to\,$ u
+
+  The full sequence is: q s v w t x z y r u
+
+\end{enumerate}
+
+
+\section*{Problem 2}
+
+\subsection{Breadth First Search}
+\begin{enumerate}
+\item q $\, \to\,$ r s
+\item r $\, \to\,$ t u v; s $\, \to\,$ t, w
+\item t $\, \to\,$ u x; u $\, \to\,$ v, y; v $\, \to\,$ y; w $\, \to\,$ x
+\item x $\, \to\,$ y; y $\, \to\,$ NULL
+
+  The full sequence is: q r s t u v w x y
+\end{enumerate}
+
+
+\subsection{Depth First Search}
+\begin{enumerate}
+\item q $\, \to\,$ s
+\item s $\, \to\,$ v
+\item v $\, \to\,$ w
+\item q $\, \to\,$ t
+\item t $\, \to\,$ x
+\item x $\, \to\,$ z
+\item t $\, \to\,$ y
+\item r $\, \to\,$ u
+
+  The full sequence is: q s v w t x z y r u
+
+\end{enumerate}
+
+
+\section*{Problem 3}
+
+Taking the number of butterflies $n$, and the $r$ determinations on whether they are the same
+species, an $O(n + r)$ algorithm could be described using Breadth First Search, or Depth First
+Search. The butterflies $n$ would be the nodes, and the determinations $r$ would be the edges.
+
+The consistency condition could be viewed as a 3 node cycle. Because they are only 2 species, any odd number cycle would not be allowed, however an even number cycle would still allow for the consistency condition.
+
+Performing either a BFS or DFS on the graph of determinations and if they are no odd numbered cycles then there is no contradiction in the determinations.
+
+\section*{Problem 4}
+
+For this problem you need to construct a graph of the relationships between the courses, and
+perform a topological sort of the graph. To perform a topological sort, the graph must be acyclic
+because topological sort only works in a directed acyclic graph.
+
+
+\end{document}
