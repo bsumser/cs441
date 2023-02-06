@@ -40,34 +40,118 @@ typedef struct
 } TriangleList;
 
 TriangleList *
-GetTriangles(void)
+GetTriangles(int small_read)
 {
+   FILE *f = fopen("tris.txt", "r");
+   if (f == NULL)
+   {
+       fprintf(stderr, "You must place the tris.txt file in the current directory.\n");
+       exit(EXIT_FAILURE);
+   }
+   fseek(f, 0, SEEK_END);
+   int numBytes = ftell(f);
+   fseek(f, 0, SEEK_SET);
+   if (numBytes != 241511792)
+   {
+       fprintf(stderr, "Your tris.txt file is corrupted.  It should be 241511792 bytes, but you only have %d.\n", numBytes);
+       exit(EXIT_FAILURE);
+   }
+
+   if (small_read == 1)
+   {
+       numBytes = 10000;
+   }
+
+   char *buffer = (char *) malloc(numBytes);
+   if (buffer == NULL)
+   {
+       fprintf(stderr, "Unable to allocate enough memory to load file.\n");
+       exit(EXIT_FAILURE);
+   }
+
+   fread(buffer, sizeof(char), numBytes, f);
+
+   char *tmp = buffer;
+   int numTriangles = atoi(tmp);
+   while (*tmp != '\n')
+       tmp++;
+   tmp++;
+
+   if (numTriangles != 2566541)
+   {
+       fprintf(stderr, "Issue with reading file -- can't establish number of triangles.\n");
+       exit(EXIT_FAILURE);
+   }
+
+   if (small_read == 1)
+       numTriangles = 100;
+
    TriangleList *tl = (TriangleList *) malloc(sizeof(TriangleList));
-   tl->numTriangles = 100;
+   tl->numTriangles = numTriangles;
    tl->triangles = (Triangle *) malloc(sizeof(Triangle)*tl->numTriangles);
 
-   unsigned char colors[6][3] = { {255,128,0}, {255, 0, 127}, {0,204,204},
-                                  {76,153,0}, {255, 204, 204}, {204, 204, 0}};
-   for (int i = 0 ; i < 100 ; i++)
+   for (int i = 0 ; i < tl->numTriangles ; i++)
    {
-       int idxI = i%10;
-       int posI = idxI*100;
-       int idxJ = i/10;
-       int posJ = idxJ*100;
-       int firstPt = (i%3);
-       tl->triangles[i].X[firstPt] = posI;
-       if (i == 50)
-           tl->triangles[i].X[firstPt] = -10;
-       tl->triangles[i].Y[firstPt] = posJ+10*(idxJ+1);
-       tl->triangles[i].X[(firstPt+1)%3] = posI+105;
-       tl->triangles[i].Y[(firstPt+1)%3] = posJ;
-       tl->triangles[i].X[(firstPt+2)%3] = posI+i;
-       tl->triangles[i].Y[(firstPt+2)%3] = posJ;
-       if (i == 95)
-          tl->triangles[i].Y[firstPt] = 1050;
-       tl->triangles[i].color[0] = colors[i%6][0];
-       tl->triangles[i].color[1] = colors[i%6][1];
-       tl->triangles[i].color[2] = colors[i%6][2];
+       double x1, y1, x2, y2, x3, y3;
+       int    r, g, b;
+/*
+ * Weird: sscanf has a terrible implementation for large strings.
+ * When I did the code below, it did not finish after 45 minutes.
+ * Reading up on the topic, it sounds like it is a known issue that
+ * sscanf fails here.  Stunningly, fscanf would have been faster.
+ *     sscanf(tmp, "(%lf, %lf), (%lf, %lf), (%lf, %lf) = (%d, %d, %d)\n%n",
+ *              &x1, &y1, &x2, &y2, &x3, &y3, &r, &g, &b, &numRead);
+ *
+ *  So, instead, do it all with atof/atoi and advancing through the buffer manually...
+ */
+       tmp++,
+       x1 = atof(tmp);
+       while (*tmp != ',')
+          tmp++;
+       tmp += 2; // comma+space
+       y1 = atof(tmp);
+       while (*tmp != ')')
+          tmp++;
+       tmp += 4; // right-paren+comma+space+left-paren
+       x2 = atof(tmp);
+       while (*tmp != ',')
+          tmp++;
+       tmp += 2; // comma+space
+       y2 = atof(tmp);
+       while (*tmp != ')')
+          tmp++;
+       tmp += 4; // right-paren+comma+space+left-paren
+       x3 = atof(tmp);
+       while (*tmp != ',')
+          tmp++;
+       tmp += 2; // comma+space
+       y3 = atof(tmp);
+       while (*tmp != ')')
+          tmp++;
+       tmp += 5; // right-paren+space+equal+space+left-paren
+       r = atoi(tmp);
+       while (*tmp != ',')
+          tmp++;
+       tmp += 2; // comma+space
+       g = atoi(tmp);
+       while (*tmp != ',')
+          tmp++;
+       tmp += 2; // comma+space
+       b = atoi(tmp);
+       while (*tmp != '\n')
+          tmp++;
+       tmp++; // onto next line
+
+       tl->triangles[i].X[0] = x1;
+       tl->triangles[i].X[1] = x2;
+       tl->triangles[i].X[2] = x3;
+       tl->triangles[i].Y[0] = y1;
+       tl->triangles[i].Y[1] = y2;
+       tl->triangles[i].Y[2] = y3;
+       tl->triangles[i].color[0] = r;
+       tl->triangles[i].color[1] = g;
+       tl->triangles[i].color[2] = b;
+       //printf("Read triangle %f, %f, %f, %f, %f, %f, %d, %d, %d\n", x1, y1, x2, y2, x3, y3, r, g, b);
 
        tl->triangles[i].leftIdx = 0;
        tl->triangles[i].rightIdx = 0;
@@ -77,6 +161,7 @@ GetTriangles(void)
        tl->triangles[i].triangleType = -1; // variable for unset triangle type
    }
 
+   free(buffer);
    return tl;
 }
 /*------------------------END STARTER CODE-------------------------------------------*/
@@ -473,7 +558,7 @@ int main(int argc, char* argv[])
 
     int colorRange = 255;
 
-    TriangleList *tl = GetTriangles();
+    TriangleList *tl = GetTriangles(0);
 
     Image img;
 
