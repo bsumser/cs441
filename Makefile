@@ -14,4 +14,4 @@ proj1C: proj1C.o
 .PHONY: clean
 
 clean:
-	rm -f *.o *main *.png *_out.pnm
+	rm -f *.o *main *.png *_out.pnm differences.pnm *.out
