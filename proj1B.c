@@ -312,29 +312,29 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img, int triangleNum)
 
 
     //error checking for vertical slope, sets right end as the max x coordinate
-    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->topIdx]) {
+    if (triangle->X[triangle->rightIdx] == triangle->X[triangle->bottomIdx]) {
         rightEnd = maxX;
         updateRight = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
-        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->topIdx]);
+        slopeRight = (triangle->Y[triangle->rightIdx] - triangle->Y[triangle->bottomIdx])
+        / (triangle->X[triangle->rightIdx] - triangle->X[triangle->bottomIdx]);
         rightB = -slopeRight * triangle->X[triangle->rightIdx] + triangle->Y[triangle->rightIdx];
         updateRight = 1;
     }
 
     //error checking for vertical slope, sets left end as the max x coordinate
-    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->topIdx]) {
+    if (triangle->X[triangle->leftIdx] == triangle->X[triangle->bottomIdx]) {
         leftEnd = minX;
         updateLeft = 0;
     }
 
     //solve y = mx + b for b with given slope, y and x values
     else {
-        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->topIdx])
-        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->topIdx]);
+        slopeLeft = (triangle->Y[triangle->leftIdx] - triangle->Y[triangle->bottomIdx])
+        / (triangle->X[triangle->leftIdx] - triangle->X[triangle->bottomIdx]);
         leftB = -slopeLeft * triangle->X[triangle->leftIdx] + triangle->Y[triangle->leftIdx];
         updateLeft = 1;
     }
@@ -343,30 +343,31 @@ void RasterizeGoingUpTriangle(Triangle *triangle, Image *img, int triangleNum)
     if (log_var == 1) {printf("Left slope is %f\n", slopeLeft);}
 
     if (log_var == 1) {printf("Scalines go from %f to %f\n", minY, maxY);}
-    for (int i = (int)minY; i <= (int)maxY; i++) {
-        if ((int)maxY - (int)minY > 5) {
+    for (int i = minY; i <= maxY; i++) {
+        if (maxY - minY > 5) {
             printf("too many scanlines at triangle %d\n", triangleNum);
             abort();
         }
-        if (updateRight == 1) {rightEnd = (((double)i - rightB) / slopeRight);}
-        if (updateLeft == 1) {leftEnd = (((double)i - leftB) / slopeLeft);}
+        if (updateRight == 1) {rightEnd = ((i - rightB) / slopeRight);}
+        if (updateLeft == 1) {leftEnd = ((i - leftB) / slopeLeft);}
         rightEnd = F441(rightEnd);
         leftEnd = C441(leftEnd);
         if (log_var == 2) {printf("Scanline %d: intercepts go from %d to %d\n", i, (int)leftEnd, (int)rightEnd);}
 
-        for (int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            if ((int)rightEnd - (int)leftEnd > 5) {
+        for ( int c = leftEnd; c <= rightEnd; c++) {
+            if (rightEnd - leftEnd > 5) {
                 printf("too many pixels at triangle %d scanline %d\n", triangleNum, i);
                 abort();
             }
-            int x = NUM_ROWS - i - 1;
-            int y = c;
-            if (x >= NUM_ROWS || y >= NUM_COLS || x < 0 || y < 0) {
-                if (log_var == 2) {printf("x = %d | y = %d\n",x,y);}
+            int row = NUM_ROWS - i - 1;
+            int col = c;
+            if (row >= NUM_ROWS || col >= NUM_COLS || row < 0 || col < 0) {
+                if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
                 continue;
             }
-            if (log_var == 2) {printf("inserting pixel at pixels[%d][%d]\n", x, y);}
-            img->pixels[x][y] = pixel;
+            if (log_var == 1) {printf("inserting pixel at pixels[%d][%d]\n", row, col);}
+            img->pixels[row][col] = pixel;
+
         }
     }
 }
@@ -466,8 +467,8 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
     //set pixel to be inserted
     Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
 
-    double minY = C441(triangle->Y[triangle->bottomIdx]);
-    double maxY = F441(triangle->Y[triangle->topIdx]);
+    double minY = triangle->Y[triangle->bottomIdx];
+    double maxY = triangle->Y[triangle->topIdx];
     double leftEnd = 0;
     double rightEnd = 0;
     double topBotSlope = 0;
@@ -499,15 +500,15 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
         printf("botMidSlope: %f\n botMidIntercept: %f\n", botMidSlope, botMidIntercept);
     }
 
-    if (triangle->X[triangle->bottomIdx] < triangle->X[triangle->middleIdx] < triangle->X[triangle->topIdx]) {
+    if (triangle->X[triangle->bottomIdx] < triangle->X[triangle->middleIdx] || triangle->X[triangle->middleIdx] > triangle->X[triangle->topIdx]) {
         goingRight = 1;
     }
-    else {
+    if (triangle->X[triangle->bottomIdx] > triangle->X[triangle->middleIdx] || triangle->X[triangle->middleIdx] < triangle->X[triangle->topIdx]) {
         goingLeft = 1;
     }
 
-    for (int i = (int)minY; i <= (int)maxY; i++) {
-        if ((int)maxY - (int)minY > 5) {
+    for (int i = C441(minY); i <= F441(maxY); i++) {
+        if (maxY - minY > 5) {
             printf("too many scanlines at triangle %d\n", triangleNum);
             abort();
         }
@@ -531,8 +532,8 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
         }
         if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, leftEnd, rightEnd); }
 
-        for ( int c = (int)leftEnd; c <= (int)rightEnd; c++) {
-            if ((int)rightEnd - (int)leftEnd > 5) {
+        for ( int c = C441(leftEnd); c <= F441(rightEnd); c++) {
+            if (rightEnd - leftEnd > 5) {
                 printf("too many pixels at triangle %d scanline %d\n", triangleNum, i);
                 abort();
             }
@@ -683,12 +684,12 @@ int main(int argc, char* argv[])
         switch(curTriangle->triangleType) {
             case (0):
                 if (log_var == 1) {printf("rasterizing flat bottom triangle\n");}
-                RasterizeGoingUpTriangle(curTriangle, &img, i);
+                //RasterizeGoingUpTriangle(curTriangle, &img, i);
                 upTriangleCount++;
                 break;
             case (1):
                 if (log_var == 1) {printf("rasterizing flat top triangle\n");}
-                RasterizeGoingDownTriangle(curTriangle, &img, i);
+                //RasterizeGoingDownTriangle(curTriangle, &img, i);
                 downTriangleCount++;
                 break;
             case (2):
@@ -702,12 +703,17 @@ int main(int argc, char* argv[])
         }
     }
 
+    double totalCount = 100 * ((upTriangleCount + downTriangleCount + arbTriangleCount) / 2500000);
+
     printf("Triangles counted:\n");
     printf("Up: %d\n",upTriangleCount);
     printf("Down: %d\n",downTriangleCount);
     printf("Arbitrary: %d\n",arbTriangleCount);
+    printf("Rasterized %f percent of triangles\n", totalCount);
 
     fwrite(&img, sizeof(img), 1, fp);
+
+    //3029
     fclose(fp);
     return 0;
 }
