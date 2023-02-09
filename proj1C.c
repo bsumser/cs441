@@ -603,7 +603,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    char *filename = "proj1B_out.pnm";
+    char *filename = "proj1C_out.pnm";
     FILE *fp = fopen(filename, "w");
 
     if (fp == NULL) {
