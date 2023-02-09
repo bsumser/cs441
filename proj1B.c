@@ -463,29 +463,13 @@ void RasterizeGoingDownTriangle(Triangle *triangle, Image *img, int triangleNum)
 
 void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum) {
     if (log_var == 1) {printf("%s called\n", __func__);}
-
     int topIdx = 0;
     int midIdx = 0;
     int botIdx = 0;
 
-    for (int i = 0; i < 3; i++) {
-        if (triangle->Y[i] < triangle->Y[botIdx]) { botIdx = i;}
-        if (triangle->Y[i] > triangle->Y[topIdx]) { topIdx = i;}
-    }
-
-    midIdx = 5 - (botIdx + topIdx + 2);
-
-    if (log_var == 1) {
-        printf("top vertex index is %d at (%f,%f)\n", topIdx, triangle->X[topIdx], triangle->Y[topIdx]);
-        printf("mid vertex index is %d at (%f,%f)\n", midIdx, triangle->X[midIdx], triangle->Y[midIdx]);
-        printf("bot vertex index is %d at (%f,%f)\n", botIdx, triangle->X[botIdx], triangle->Y[botIdx]);
-    }
-
     //set pixel to be inserted
     Pixel pixel = {.red = triangle->color[0], .green = triangle->color[1], .blue = triangle->color[2]};
 
-    double minY = triangle->Y[botIdx];
-    double maxY = triangle->Y[topIdx];
     double leftEnd = 0;
     double rightEnd = 0;
     double topBotSlope = 0;
@@ -494,8 +478,32 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
     double topBotIntercept = 0;
     double topMidIntercept = 0;
     double botMidIntercept = 0;
-    int goingRight = -1;
-    int goingLeft = -1;
+
+    for (int i = 0; i < 3; i++) {
+        if (triangle->Y[i] < triangle->Y[botIdx]) { botIdx = i;}
+        if (triangle->Y[i] > triangle->Y[topIdx]) { topIdx = i;}
+    }
+
+    midIdx = 3 - topIdx - botIdx;    // Little trick to find mid
+
+    //set bottom and top of rasterizartion
+    double minY = triangle->Y[botIdx];
+    double maxY = triangle->Y[topIdx];
+
+    if (log_var == 1) {
+        printf("top vertex index is %d at (%f,%f)\n", topIdx, triangle->X[topIdx], triangle->Y[topIdx]);
+        printf("mid vertex index is %d at (%f,%f)\n", midIdx, triangle->X[midIdx], triangle->Y[midIdx]);
+        printf("bot vertex index is %d at (%f,%f)\n", botIdx, triangle->X[botIdx], triangle->Y[botIdx]);
+    }
+
+
+    /*---If 3 points in a line rather than being a triangle, skip---*/
+    if (triangle->Y[triangle->topIdx] == triangle->Y[triangle->bottomIdx]
+        && triangle->Y[triangle->topIdx] == triangle->Y[triangle->middleIdx])
+        return;
+    if (triangle->X[triangle->topIdx] - triangle->X[triangle->bottomIdx]
+        && triangle->X[triangle->topIdx] == triangle->X[triangle->middleIdx])
+        return;
 
     if (log_var == 1) { printf("Rasterizing from %f to %f\n", minY, maxY); }
 
@@ -516,37 +524,37 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum)
         printf("topMidSlope: %f\n topMidIntercept: %f\n", topMidSlope, topMidIntercept);
         printf("botMidSlope: %f\n botMidIntercept: %f\n", botMidSlope, botMidIntercept);
     }
-
-    if (triangle->X[botIdx] < triangle->X[midIdx] || triangle->X[midIdx] > triangle->X[topIdx]) {
-        goingRight = 1;
-    }
-    if (triangle->X[botIdx] > triangle->X[midIdx] || triangle->X[midIdx] < triangle->X[topIdx]) {
-        goingLeft = 1;
+    if (maxY - minY > 5) {
+        printf("too many scanlines at triangle %d\n", triangleNum);
+        abort();
     }
 
     for (int i = C441(minY); i <= F441(maxY); i++) {
-        if (maxY - minY > 5) {
-            printf("too many scanlines at triangle %d\n", triangleNum);
-            abort();
+        // Assuming top-bot line is on the right
+        // The ternary operator (shorthand if/else) statements here are just to check for vertical line
+        rightEnd = triangle->X[topIdx] == triangle->X[botIdx] ? triangle->X[topIdx] : (i - topBotIntercept) / topBotSlope;
+
+        // Going down and not flat bot, we work with mid-bot line
+        if (i < triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[botIdx]) {
+            // Assuming mid-bot line is on the right
+            leftEnd = triangle->X[midIdx] == triangle->X[botIdx] ? triangle->X[midIdx] : (i - botMidIntercept) / botMidSlope;
+        }
+        // Going up and not flat top, we work with mid-top line
+        else if (i >= triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[topIdx]) {
+            // Assuming mid-top line is on the right
+            leftEnd = triangle->X[midIdx] == triangle->X[topIdx] ? triangle->X[midIdx] : (i - topMidIntercept) / topMidSlope;
+        }
+        // This else here means if there's a flat top triangle, don't scan top. And if there's a flat bot triangle, don't scan bot
+        else
+            return;
+
+        // Now if left intercept ends up greater than right intercept, swap them two
+        if (leftEnd > rightEnd) {
+            double tmp = leftEnd;
+            leftEnd = rightEnd;
+            rightEnd = tmp;
         }
 
-        if (goingRight == 1) {
-            leftEnd = C441((i - topBotIntercept) / topBotSlope);
-            rightEnd = F441((i - botMidIntercept) / botMidSlope);
-        }
-
-        if (goingLeft == 1) {
-            leftEnd = C441((i - botMidIntercept) / botMidSlope);
-            rightEnd = F441((i - topBotIntercept) / topBotSlope);
-        }
-
-        //update slope when moving past middle of triangle
-        if (i > triangle->Y[midIdx] && goingRight == 1) {
-            rightEnd = F441((i - topMidIntercept) / topMidSlope);
-        }
-        if (i > triangle->Y[midIdx] && goingLeft == 1) {
-            leftEnd = F441((i - topMidIntercept) / topMidSlope);
-        }
         if (log_var == 1) { printf("Scanline %d goes from %f to %f \n", i, leftEnd, rightEnd); }
 
         for ( int c = C441(leftEnd); c <= F441(rightEnd); c++) {
@@ -675,7 +683,7 @@ int main(int argc, char* argv[])
     //if (curTriangle->triangleType == 1) { RasterizeGoingDownTriangle(curTriangle, &img); }
     //if (curTriangle->triangleType == 0) { RasterizeGoingUpTriangle(curTriangle, &img); }
 
-    for (int i = 0 ; i < 1; i++) {
+    for (int i = 0 ; i < tl->numTriangles; i++) {
         Triangle *curTriangle = tl->triangles+i;
         RasterizeArbitraryTriangle(curTriangle, &img, i);
         arbTriangleCount++;
