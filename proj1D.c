@@ -292,6 +292,7 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
         rightEnd = triangle->X[topIdx] == triangle->X[botIdx] ? triangle->X[topIdx] : (i - topBotIntercept) / topBotSlope;
         t_right = triangle->X[topIdx] == triangle->X[botIdx] ? (i - triangle->Y[topIdx]) / (triangle->Y[botIdx] - triangle->Y[topIdx]) : (rightEnd - triangle->X[topIdx]) / (triangle->X[botIdx] - triangle->X[topIdx]);
         f_right_end = triangle->Z[topIdx] + (t_right * (triangle->Z[botIdx] - triangle->Z[topIdx]));
+        f_right_end = triangle->Z[topIdx] + (t_right * (triangle->Z[botIdx] - triangle->Z[topIdx]));
 
         // Going down and not flat bot, we work with mid-bot line
         if (i < triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[botIdx]) {
@@ -420,8 +421,8 @@ int main(int argc, char* argv[])
 
     printf("Rasterizing %d triangles\n", tl->numTriangles);
 
-    //int len = tl->numTriangles;
-    int len = 10;
+    int len = tl->numTriangles;
+    //int len = 10;
 
     for (int i = 0 ; i < len; i++) {
         Triangle *curTriangle = tl->triangles+i;
