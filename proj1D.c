@@ -158,9 +158,6 @@ typedef struct
     Pixel pixels[NUM_ROWS][NUM_COLS];
 }Image;
 
-//init the z buffer
-double z_buffer[NUM_ROWS][NUM_COLS] = {{-1.0}};
-
 int log_var = 0;
 
 int determineTriangle(Triangle *triangle, int triangleNum)
@@ -207,7 +204,7 @@ int determineTriangle(Triangle *triangle, int triangleNum)
     return 0;
 }
 
-void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum, double z_buffer[][NUM_COLS]) {
+void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum, double **z_buffer) {
     if (log_var == 1) {printf("%s called\n", __func__);}
     //set pixel to be inserted
     Pixel pixel = {
@@ -316,13 +313,14 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
 
         // Now if left intercept ends up greater than right intercept, swap them two
         if (leftEnd > rightEnd) {
+            //if (log_var >= 1) { printf("swapped at %d\n", triangleNum); }
             double tmp = leftEnd;
             leftEnd = rightEnd;
             rightEnd = tmp;
 
             double tmp_t = f_left_end;
             f_left_end = f_right_end;
-            f_right_end = tmp;
+            f_right_end = tmp_t;
         }
 
         if (log_var == 1) {
@@ -348,10 +346,10 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             }
 
             //if z(r,c) > depthBuffer(r,c), exit if less than current z_buffer pixel
-            //if (f_cur_pixel < z_buffer[row][col]) {
-            //    //printf("%f < %f\n", f_cur_pixel, z_buffer[row][col]);
-            //    continue;
-            //}
+            if (f_cur_pixel < z_buffer[row][col]) {
+                if (log_var == 2) { printf("%f < %f\n", f_cur_pixel, z_buffer[row][col]); }
+                continue;
+            }
 
             if (log_var == 2) {
                 printf("inserting pixel at pixels[%d][%d]\n", row, col);
@@ -367,6 +365,18 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
 int main(int argc, char* argv[])
 {
     Pixel black = {.red = 0, .green = 0, .blue = 0};
+
+    //init memory for z_buffer
+    double **z_buffer = malloc(NUM_ROWS * sizeof *z_buffer);
+    for (int i = 0; i < NUM_ROWS; i++)
+        z_buffer[i] = malloc(NUM_ROWS * sizeof *z_buffer[i]);
+
+    for (int i = 0; i < NUM_ROWS; i++) {
+        for (int j = 0; j < NUM_ROWS; j++) {
+            z_buffer[i][j] = -1;
+        }
+    }
+
 
     log_var = 0;
     if (argc != 1) {
@@ -411,7 +421,7 @@ int main(int argc, char* argv[])
     printf("Rasterizing %d triangles\n", tl->numTriangles);
 
     //int len = tl->numTriangles;
-    int len = 42280;
+    int len = 10;
 
     for (int i = 0 ; i < len; i++) {
         Triangle *curTriangle = tl->triangles+i;
