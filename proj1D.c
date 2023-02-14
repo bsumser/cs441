@@ -204,6 +204,14 @@ int determineTriangle(Triangle *triangle, int triangleNum)
     return 0;
 }
 
+void swap(double *value1, double *value2)
+{
+    double tmp;
+    tmp = *value1;
+    *value1 = *value2;
+    *value2 = tmp;
+}
+
 void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum, double **z_buffer) {
     if (log_var == 1) {printf("%s called\n", __func__);}
     //set pixel to be inserted
@@ -211,6 +219,13 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
     .red = C441(triangle->color[0][0] * 255),
     .green = C441(triangle->color[0][1] * 255),
     .blue = C441(triangle->color[0][2] * 255) };
+
+    double red_left = 0;
+    double green_left = 0;
+    double blue_left = 0;
+    double red_right = 0;
+    double green_right = 0;
+    double blue_right = 0;
 
     double leftEnd = 0;
     double rightEnd = 0;
@@ -292,7 +307,11 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
         rightEnd = triangle->X[topIdx] == triangle->X[botIdx] ? triangle->X[topIdx] : (i - topBotIntercept) / topBotSlope;
         t_right = triangle->X[topIdx] == triangle->X[botIdx] ? (i - triangle->Y[topIdx]) / (triangle->Y[botIdx] - triangle->Y[topIdx]) : (rightEnd - triangle->X[topIdx]) / (triangle->X[botIdx] - triangle->X[topIdx]);
         f_right_end = triangle->Z[topIdx] + (t_right * (triangle->Z[botIdx] - triangle->Z[topIdx]));
-        f_right_end = triangle->Z[topIdx] + (t_right * (triangle->Z[botIdx] - triangle->Z[topIdx]));
+
+        //interpolate the colors using t_right
+        red_right = triangle->color[topIdx][0] + (t_right * (triangle->color[botIdx][0] - triangle->color[topIdx][0]));
+        green_right = triangle->color[topIdx][1] + (t_right * (triangle->color[botIdx][1] - triangle->color[topIdx][1]));
+        blue_right = triangle->color[topIdx][2] + (t_right * (triangle->color[botIdx][2] - triangle->color[topIdx][2]));
 
         // Going down and not flat bot, we work with mid-bot line
         if (i < triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[botIdx]) {
@@ -300,6 +319,11 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             leftEnd = triangle->X[midIdx] == triangle->X[botIdx] ? triangle->X[midIdx] : (i - botMidIntercept) / botMidSlope;
             t_left = triangle->X[midIdx] == triangle->X[botIdx] ? (i - triangle->Y[botIdx]) / (triangle->Y[midIdx] - triangle->Y[botIdx]) : (leftEnd - triangle->X[botIdx]) / (triangle->X[midIdx] - triangle->X[botIdx]);
             f_left_end = triangle->Z[botIdx] + t_left *(triangle->Z[midIdx] - triangle->Z[botIdx]);
+
+            //interpolate the colors using t_left
+            red_left = triangle->color[botIdx][0] + (t_left * (triangle->color[midIdx][0] - triangle->color[botIdx][0]));
+            green_left = triangle->color[botIdx][1] + (t_left * (triangle->color[midIdx][1] - triangle->color[botIdx][1]));
+            blue_left = triangle->color[botIdx][2] + (t_left * (triangle->color[midIdx][2] - triangle->color[botIdx][2]));
         }
         // Going up and not flat top, we work with mid-top line
         else if (i >= triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[topIdx]) {
@@ -307,6 +331,11 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             leftEnd = triangle->X[midIdx] == triangle->X[topIdx] ? triangle->X[midIdx] : (i - topMidIntercept) / topMidSlope;
             t_left = triangle->X[midIdx] == triangle->X[topIdx] ? (i - triangle->Y[midIdx]) / (triangle->Y[topIdx] - triangle->Y[midIdx]) : (leftEnd - triangle->X[midIdx]) / (triangle->X[topIdx] - triangle->X[midIdx]);
             f_left_end = triangle->Z[midIdx] + t_left *(triangle->Z[topIdx] - triangle->Z[midIdx]);
+
+            //interpolate the colors using t_left
+            red_left = triangle->color[midIdx][0] + (t_left * (triangle->color[topIdx][0] - triangle->color[midIdx][0]));
+            green_left = triangle->color[midIdx][1] + (t_left * (triangle->color[topIdx][1] - triangle->color[midIdx][1]));
+            blue_left = triangle->color[midIdx][2] + (t_left * (triangle->color[topIdx][2] - triangle->color[midIdx][2]));
         }
         // This else here means if there's a flat top triangle, don't scan top. And if there's a flat bot triangle, don't scan bot
         else
@@ -315,13 +344,16 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
         // Now if left intercept ends up greater than right intercept, swap them two
         if (leftEnd > rightEnd) {
             //if (log_var >= 1) { printf("swapped at %d\n", triangleNum); }
-            double tmp = leftEnd;
-            leftEnd = rightEnd;
-            rightEnd = tmp;
+            //double tmp = leftEnd;
+            //leftEnd = rightEnd;
+            //rightEnd = tmp;
+            swap(&leftEnd, &rightEnd);
 
-            double tmp_t = f_left_end;
-            f_left_end = f_right_end;
-            f_right_end = tmp_t;
+            //double tmp_t = f_left_end;
+            //f_left_end = f_right_end;
+            //f_right_end = tmp_t;
+            swap(&f_left_end, &f_right_end);
+
         }
 
         if (log_var == 1) {
@@ -362,6 +394,7 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
         }
     }
 }
+
 
 int main(int argc, char* argv[])
 {
