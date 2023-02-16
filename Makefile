@@ -14,6 +14,9 @@ proj1C: proj1C.o
 proj1D: proj1D.o
 	$(CC) -o proj1D_main proj1D.o $(CXXFLAGS)
 
+proj1E: proj1E.o
+	$(CC) -o proj1E_main proj1E.o $(CXXFLAGS)
+
 .PHONY: clean
 
 clean:
