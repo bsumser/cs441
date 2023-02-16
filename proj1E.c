@@ -137,6 +137,22 @@ double *normalizeVector(double vec[3])
 Matrix GetViewTransform(Camera c)
 {
     /* YOU IMPLEMENT THIS */
+    double cot = 1/tan(c.angle / 2);
+
+    Matrix m = {{{cot, 0, 0, 0},
+                 {0, cot, 0, 0},
+                 {0, 0, (c.far + c.near) / (c.far - c.near), -1},
+                 {0, 0, (2 * c.far * c.near) / (c.far - c.near), 0}}};
+
+    printf("View Transform\n");
+    PrintMatrix(m);
+    return m;
+}
+
+Matrix
+GetCameraTransform(Camera c)
+{
+    /* YOU IMPLEMENT THIS */
 
     double O[3] = {c.position[0], c.position[1], c.position[2]};
     double O_focus[3] = {c.position[0] - c.focus[0], c.position[1] - c.focus[1], c.position[2] - c.focus[2]};
@@ -165,7 +181,7 @@ Matrix GetViewTransform(Camera c)
     double v_dot_t = v[0] * t[0] + v[1] * t[1] + v[2] * t[2];
     double w_dot_t = w[0] * t[0] + w[1] * t[1] + w[2] * t[2];
 
-    Matrix m = {{{u[0], v[0], w[0], 0},
+    Matrix rv = {{{u[0], v[0], w[0], 0},
                 {u[1], v[1], w[1], 0},
                 {u[2], v[2], w[2], 0},
                 {u_dot_t, v_dot_t, w_dot_t, 1}}};
@@ -175,17 +191,8 @@ Matrix GetViewTransform(Camera c)
     printf("Camera Frame: W = %f, %f, %f,\n", w[0], w[1], w[2]);
     printf("Camera Frame: O = %f, %f, %f,\n", O[0], O[1], O[2]);
 
-    printf("%s init matrix\n", __func__);
-    PrintMatrix(m);
-    return m;
-}
-
-Matrix
-GetCameraTransform(Camera c)
-{
-    Matrix rv;
-
-    /* YOU IMPLEMENT THIS */
+    printf("Camera Transform\n");
+    PrintMatrix(rv);
 
     return rv;
 }
@@ -199,8 +206,6 @@ GetDeviceTransform()
 
     return rv;
 }
-
-
 
 typedef struct
 {
@@ -651,6 +656,7 @@ int main(int argc, char* argv[])
         double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
         InitializeScreen(img, NUM_ROWS, NUM_COLS);
         Camera c = GetCamera(i, 1000);
+        GetCameraTransform(c);
         GetViewTransform(c);
         TransformAndRenderTriangles(c, tl, img, z_buffer);
         SaveImage(img, i);
