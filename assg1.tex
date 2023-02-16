@@ -17,77 +17,272 @@
 
 \section*{Problem 1}
 
-\subsection{Breadth First Search}
-\begin{enumerate}
-\item q $\, \to\,$ r s
-\item r $\, \to\,$ t u v; s $\, \to\,$ t, w
-\item t $\, \to\,$ u x; u $\, \to\,$ v, y; v $\, \to\,$ y; w $\, \to\,$ x
-\item x $\, \to\,$ y; y $\, \to\,$ NULL
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf \\
+1   & 0   & inf & 2   & 0   & inf \\
+inf & 2   & 0   & inf & inf & -8  \\
+-4  & inf & inf & 0   & 3   & inf \\
+inf & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
 
-  The full sequence is: q r s t u v w x y
-\end{enumerate}
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+inf & 2   & 0   & inf & inf & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+inf & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+inf & 2   & 0   & inf & inf & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+inf & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+3   & 2   & 0   & 4   & inf & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+inf & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+3   & 2   & 0   & 4   & 2   & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+inf & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+3   & 2   & 0   & 4   & 2   & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+8   & 7   & inf & inf & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+3   & 2   & 0   & 4   & 2   & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+8   & 7   & inf & 9   & 0   & inf \\
+inf & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1  & inf       \\
+1   & 0   & inf & 2   & 0   & inf \\
+3   & 2   & 0   & 4   & 2   & -8  \\
+-4  & inf & inf & 0   & -5  & inf \\
+8   & 7   & inf & 9   & 0   & inf \\
+6   & 5   & 10  & inf & inf & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf       \\
+1   & 0   & inf & 2  & 0   & inf \\
+3   & 2   & 0   & 4  & 2   & -8  \\
+-4  & inf & inf & 0  & -5  & inf \\
+8   & 7   & inf & 9  & 0   & inf \\
+6   & 5   & 10  & 7  & inf & 0
+\end{bmatrix}  $
 
 
-\subsection{Depth First Search}
-\begin{enumerate}
-\item q $\, \to\,$ s
-\item s $\, \to\,$ v
-\item v $\, \to\,$ w
-\item q $\, \to\,$ t
-\item t $\, \to\,$ x
-\item x $\, \to\,$ z
-\item t $\, \to\,$ y
-\item r $\, \to\,$ u
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+1   & 0   & inf & 2  & 0  & inf \\
+3   & 2   & 0   & 4  & 2  & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
 
-  The full sequence is: q s v w t x z y r u
 
-\end{enumerate}
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & 0  & inf \\
+3   & 2   & 0   & 4  & 2  & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+3   & 2   & 0   & 4  & 2  & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & 2  & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+8   & 7   & inf & 9  & 0  & inf \\
+6   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+5   & 7   & inf & 9  & 0  & inf \\
+3   & 5   & 10  & 7  & 5  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0   & inf & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+5   & 7   & inf & 9  & 0  & inf \\
+3   & 5   & 10  & 7  & 2  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0   & 6 & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+5   & 7   & inf & 9  & 0  & inf \\
+3   & 5   & 10  & 7  & 2  & 0
+\end{bmatrix}  $
+
+$ \begin{bmatrix}
+0   & 6 & inf & inf & -1 & inf      \\
+-2  & 0   & inf & 2  & -3 & inf \\
+0   & 2   & 0   & 4  & -1 & -8  \\
+-4  & inf & inf & 0  & -5 & inf \\
+5   & 7   & inf & 9  & 0  & inf \\
+3   & 5   & 10  & 7  & 2  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0 & 6 & inf & 8   & -1 & inf      \\
+-2    & 0   & inf & 2  & -3 & inf \\
+0     & 2   & 0   & 4  & -1 & -8  \\
+-4    & 2   & inf & 0  & -5 & inf \\
+5     & 7   & inf & 9  & 0  & inf \\
+3     & 5   & 10  & 7  & 2  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0 & 6 & inf & 8   & -1 & inf      \\
+-2    & 0   & inf & 2  & -3 & inf \\
+0     & 2   & 0   & 4  & -1 & -8  \\
+-4    & 2   & inf & 0  & -5 & inf \\
+5     & 7   & inf & 9  & 0  & inf \\
+3     & 5   & 10  & 7  & 2  & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0 & 6 & inf & 8 & -1 & inf \\
+-2 & 0 & inf & 2 & -3 & inf \\
+0 & 2 & 0 & 4 & -1 & -8 \\
+-4 & 2 & inf & 0 & -5 & inf \\
+5 & 7 & inf & 9 & 0 & inf \\
+3 & 5 & 10 & 7 & 2 & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0 & 6 & inf & 8 & -1 & inf \\
+-2 & 0 & inf & 2 & -3 & inf \\
+-5 & -3 & 0 & -1 & -1 & -8 \\
+-4 & 2 & inf & 0 & -5 & inf \\
+5 & 7 & inf & 9 & 0 & inf \\
+3 & 5 & 10 & 7 & 2 & 0
+\end{bmatrix}  $
+
+
+$ \begin{bmatrix}
+0 & 6 & inf & 8 & -1 & inf \\
+-2 & 0 & inf & 2 & -3 & inf \\
+-5 & -3 & 0 & -1 & -1 & -8 \\
+-4 & 2 & inf & 0 & -5 & inf \\
+5 & 7 & inf & 9 & 0 & inf \\
+3 & 5 & 10 & 7 & 2 & 0
+\end{bmatrix}  $
 
 
 \section*{Problem 2}
 
-\subsection{Breadth First Search}
-\begin{enumerate}
-\item q $\, \to\,$ r s
-\item r $\, \to\,$ t u v; s $\, \to\,$ t, w
-\item t $\, \to\,$ u x; u $\, \to\,$ v, y; v $\, \to\,$ y; w $\, \to\,$ x
-\item x $\, \to\,$ y; y $\, \to\,$ NULL
+For this problem, you need to find the greatest distance that can be travelled between two towns with only a single pit stop.
 
-  The full sequence is: q r s t u v w x y
-\end{enumerate}
+Expressing that as $c[i,j,k]$, (max distance between cities i and j stopping in city k for fuel), you can describe a recurrence relation by:
 
+$c[i,j,k] = max(c[i,j,x] + c[k,j,x])$ for each x in the set of vertices ($V$). Therefore the expression for single stop capacity would be:
 
-\subsection{Depth First Search}
-\begin{enumerate}
-\item q $\, \to\,$ s
-\item s $\, \to\,$ v
-\item v $\, \to\,$ w
-\item q $\, \to\,$ t
-\item t $\, \to\,$ x
-\item x $\, \to\,$ z
-\item t $\, \to\,$ y
-\item r $\, \to\,$ u
-
-  The full sequence is: q s v w t x z y r u
-
-\end{enumerate}
-
+$max{c[i,j,k] | I_j,k \in V}$
 
 \section*{Problem 3}
 
-Taking the number of butterflies $n$, and the $r$ determinations on whether they are the same
-species, an $O(n + r)$ algorithm could be described using Breadth First Search, or Depth First
-Search. The butterflies $n$ would be the nodes, and the determinations $r$ would be the edges.
+Start by assuming that a sign will be placed at the i'th milepost. To calculate the next best milestone, you must
+try every next milepost and reccur until reaching the last milepost. So the cost for placing a sign at milepost $m_i$, would be:
 
-The consistency condition could be viewed as a 3 node cycle. Because they are only 2 species, any odd number cycle would not be allowed, however an even number cycle would still allow for the consistency condition.
+$cost(m_i) = min(cost(m_j)) + cost at m_j \forall j > i$
 
-Performing either a BFS or DFS on the graph of determinations and if they are no odd numbered cycles then there is no contradiction in the determinations.
+Signs will also be placed at $m_1=0$ and $m_n$.
+
+The cost for placing a sign at $m_j$ is $(100 - (j-i))^2$. At each $m_1...m_n$, you need to seperatly calculate the costs and add in the minimum.
+If you store the calculated costs in a table, instead of recalculating them, you can reduce the number of computations quite a bit.
+
+The reccurence would be:
+
+$cost(i) = (100 - (j-i))^2 + min(cost(j)) \forall j>i \and j<=n$
 
 \section*{Problem 4}
 
-For this problem you need to construct a graph of the relationships between the courses, and
-perform a topological sort of the graph. To perform a topological sort, the graph must be acyclic
-because topological sort only works in a directed acyclic graph.
+For each $i$th day, it depends on the cost of the $i-1$th day, and so on. By mainting a dynamic programmingh table, you can store the minimum
+operating costs of both cities $C$ and $D$. To decide on moving for each day, the value would have to be $M + (min) < max$ value.
+
+Given the operating cost $O(i, c)$, such that for all days up to day $i$ and ending up in city $c$ ($c_1 = start$, $c_2 = end$)
+and moving cost $M(c_1, c_2)$, the recurence would be:
+
+$O(i, c) = min(O(i-1, c_1), min(O(i-1, c_2) + M(c_1, c_2) \forall $ cities such that $ c_2 != c_1)) + A[c][i]$
+
+The recurence for the optimal value can be determined by maintaining a minimum array of both cities operating costs.
 
 
 \end{document}
