@@ -19,10 +19,149 @@ double F441(double f)
 
 typedef struct
 {
+    double          A[4][4];     // A[i][j] means row i, column j
+} Matrix;
+
+
+void
+PrintMatrix(Matrix m)
+{
+    for (int i = 0 ; i < 4 ; i++)
+    {
+        printf("(%.7f %.7f %.7f %.7f)\n", m.A[i][0], m.A[i][1], m.A[i][2], m.A[i][3]);
+    }
+}
+
+Matrix
+ComposeMatrices(Matrix M1, Matrix M2)
+{
+    Matrix m_out;
+    for (int i = 0 ; i < 4 ; i++)
+        for (int j = 0 ; j < 4 ; j++)
+        {
+            m_out.A[i][j] = 0;
+            for (int k = 0 ; k < 4 ; k++)
+                m_out.A[i][j] += M1.A[i][k]*M2.A[k][j];
+        }
+    return m_out;
+}
+
+void
+TransformPoint(Matrix m, const double *ptIn, double *ptOut)
+{
+    ptOut[0] = ptIn[0]*m.A[0][0]
+             + ptIn[1]*m.A[1][0]
+             + ptIn[2]*m.A[2][0]
+             + ptIn[3]*m.A[3][0];
+    ptOut[1] = ptIn[0]*m.A[0][1]
+             + ptIn[1]*m.A[1][1]
+             + ptIn[2]*m.A[2][1]
+             + ptIn[3]*m.A[3][1];
+    ptOut[2] = ptIn[0]*m.A[0][2]
+             + ptIn[1]*m.A[1][2]
+             + ptIn[2]*m.A[2][2]
+             + ptIn[3]*m.A[3][2];
+    ptOut[3] = ptIn[0]*m.A[0][3]
+             + ptIn[1]*m.A[1][3]
+             + ptIn[2]*m.A[2][3]
+             + ptIn[3]*m.A[3][3];
+}
+
+
+
+typedef struct
+{
+    double          near, far;
+    double          angle;
+    double          position[3];
+    double          focus[3];
+    double          up[3];
+} Camera;
+
+
+double SineParameterize(int curFrame, int nFrames, int ramp)
+{
+    int nNonRamp = nFrames-2*ramp;
+    double height = 1./(nNonRamp + 4*ramp/M_PI);
+    if (curFrame < ramp)
+    {
+        double factor = 2*height*ramp/M_PI;
+        double eval = cos(M_PI/2*((double)curFrame)/ramp);
+        return (1.-eval)*factor;
+    }
+    else if (curFrame > nFrames-ramp)
+    {
+        int amount_left = nFrames-curFrame;
+        double factor = 2*height*ramp/M_PI;
+        double eval =cos(M_PI/2*((double)amount_left/ramp));
+        return 1. - (1-eval)*factor;
+    }
+    double amount_in_quad = ((double)curFrame-ramp);
+    double quad_part = amount_in_quad*height;
+    double curve_part = height*(2*ramp)/M_PI;
+    return quad_part+curve_part;
+}
+
+Camera
+GetCamera(int frame, int nframes)
+{
+    double t = SineParameterize(frame, nframes, nframes/10);
+    Camera c;
+    c.near = 5;
+    c.far = 200;
+    c.angle = M_PI/6;
+    c.position[0] = 40*sin(2*M_PI*t);
+    c.position[1] = 40*cos(2*M_PI*t);
+    c.position[2] = 40;
+    c.focus[0] = 0;
+    c.focus[1] = 0;
+    c.focus[2] = 0;
+    c.up[0] = 0;
+    c.up[1] = 1;
+    c.up[2] = 0;
+    return c;
+}
+
+Matrix GetViewTransform(Camera c)
+{
+    Matrix m;
+
+    /* YOU IMPLEMENT THIS */
+
+    return m;
+}
+
+Matrix
+GetCameraTransform(Camera c)
+{
+    Matrix rv;
+
+    /* YOU IMPLEMENT THIS */
+
+    return rv;
+}
+
+Matrix
+GetDeviceTransform()
+{
+    Matrix rv;
+
+    /* YOU IMPLEMENT THIS */
+
+    return rv;
+}
+
+
+
+typedef struct
+{
    double         X[3];
    double         Y[3];
    double         Z[3];
    double         color[3][3]; // color[2][0] is for V2, red channel
+#ifdef NORMALS
+   double         normals[3][3]; // normals[2][0] is for V2, x-component
+#endif
 } Triangle;
 
 typedef struct
@@ -30,6 +169,23 @@ typedef struct
    int numTriangles;
    Triangle *triangles;
 } TriangleList;
+
+char *
+Read3Numbers(char *tmp, double *v1, double *v2, double *v3)
+{
+    *v1 = atof(tmp);
+    while (*tmp != ' ')
+       tmp++;
+    tmp++; /* space */
+    *v2 = atof(tmp);
+    while (*tmp != ' ')
+       tmp++;
+    tmp++; /* space */
+    *v3 = atof(tmp);
+    while (*tmp != ' ' && *tmp != '\n')
+       tmp++;
+    return tmp;
+}
 
 char *
 ReadTuple3(char *tmp, double *v1, double *v2, double *v3)
@@ -143,8 +299,7 @@ Get3DTriangles()
 
    free(buffer);
    return tl;
-}
-/*------------------------END STARTER CODE-------------------------------------------*/
+}/*------------------------END STARTER CODE-------------------------------------------*/
 
 typedef struct
 {
@@ -405,10 +560,62 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
     }
 }
 
+void TransformAndRenderTriangles(Camera c, TriangleList *tl, Image *img, double **z_buffer)
+{
+    if (log_var == 1) {printf("%s called\n", __func__);}
+    double arbTriangleCount = 0;
 
-int main(int argc, char* argv[])
+    printf("Rasterizing %d triangles\n", tl->numTriangles);
+
+    int len = tl->numTriangles;
+    //int len = 10;
+
+    for (int i = 0 ; i < len; i++) {
+        Triangle *curTriangle = tl->triangles+i;
+        arbTriangleCount++;
+        RasterizeArbitraryTriangle(curTriangle, img, i, z_buffer);
+    }
+
+    double totalCount = (arbTriangleCount / tl->numTriangles);
+
+    printf("Triangles counted:\n");
+    printf("Arbitrary: %f\n",arbTriangleCount);
+    printf("Rasterized %f percent of triangles\n", totalCount);
+
+}
+
+void InitializeScreen(Image *img, int num_rows, int num_cols)
 {
     Pixel black = {.red = 0, .green = 0, .blue = 0};
+
+    if (log_var == 1) {printf("%s called\n", __func__);}
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            img->pixels[i][j] = black;
+        }
+    }
+    printf("%s initialized img of %d x %d", __func__, num_rows, num_cols);
+}
+
+Image* AllocateScreen(int num_rows, int num_cols)
+{
+    if (log_var == 1) {printf("%s called\n", __func__);}
+    Pixel black = {.red = 0, .green = 0, .blue = 0};
+    Image *img = malloc(sizeof(*img));
+
+    printf("loop started\n");
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            img->pixels[i][j] = black;
+        }
+    }
+    printf("%s initialized img of %d x %d", __func__, num_rows, num_cols);
+    return img;
+}
+
+double** InitializBuffer(int num_rows, int num_cols)
+{
+    if (log_var == 1) {printf("%s called\n", __func__);}
 
     //init memory for z_buffer
     double **z_buffer = malloc(NUM_ROWS * sizeof *z_buffer);
@@ -420,39 +627,19 @@ int main(int argc, char* argv[])
             z_buffer[i][j] = -1;
         }
     }
+    return z_buffer;
+}
 
-
-    log_var = 0;
-    if (argc != 1) {
-        if (strcmp(argv[1], "-l") == 0) { log_var = 1; }
-        if (strcmp(argv[1], "-log") == 0) { log_var = 2; }
-    }
-    printf("Level %d logging active\n", log_var);
-    printf("triangulator running\n");
-
-    int upTriangleCount = 0;
-    int downTriangleCount = 0;
-    double arbTriangleCount = 0;
-    int failTriangleCount = 0;
-
+void SaveImage(Image *img, int i)
+{
+    if (log_var == 1) {printf("%s called\n", __func__);}
+    char *filename = (i == 0) ? "proj1E_frame0000.pnm" : (i == 250) ? "proj1E_frame0250.pnm" : (i == 500) ? "proj1E_frame0500.pnm" : (i == 750) ? "proj1E_frame0750.pnm" : "wrong_num.pnm";
     int colorRange = 255;
 
-    TriangleList *tl = Get3DTriangles();
-
-    Image img;
-
-    for (int i = 0; i < NUM_ROWS; i++) {
-        for (int j = 0; j < NUM_COLS; j++) {
-            img.pixels[i][j] = black;
-        }
-    }
-
-    char *filename = "proj1D_out.pnm";
     FILE *fp = fopen(filename, "w");
-
     if (fp == NULL) {
         printf("file open failure\n");
-        return 0;
+        return;
     }
     else {
         printf("file open success\n");
@@ -462,27 +649,33 @@ int main(int argc, char* argv[])
     fprintf(fp, "%d %d\n", NUM_COLS, NUM_ROWS);
     fprintf(fp, "%d\n", colorRange);
 
-    printf("Rasterizing %d triangles\n", tl->numTriangles);
-
-    int len = tl->numTriangles;
-    //int len = 10;
-
-    for (int i = 0 ; i < len; i++) {
-        Triangle *curTriangle = tl->triangles+i;
-        arbTriangleCount++;
-        RasterizeArbitraryTriangle(curTriangle, &img, i, z_buffer);
-    }
-
-    double totalCount = (arbTriangleCount / tl->numTriangles);
-
-    printf("Triangles counted:\n");
-    printf("Up: %d\n",upTriangleCount);
-    printf("Down: %d\n",downTriangleCount);
-    printf("Arbitrary: %f\n",arbTriangleCount);
-    printf("Rasterized %f percent of triangles\n", totalCount);
-
-    fwrite(&img, sizeof(img), 1, fp);
-
+    fwrite(img, sizeof(*img), 1, fp);
+    printf("%s saved file named %s\n", __func__, filename);
     fclose(fp);
+}
+
+
+int main(int argc, char* argv[])
+{
+    printf("triangulator running\n");
+    log_var = 0;
+    if (argc != 1) {
+        if (strcmp(argv[1], "-l") == 0) { log_var = 1; }
+        if (strcmp(argv[1], "-log") == 0) { log_var = 2; }
+    }
+    printf("Level %d logging active\n", log_var);
+
+    TriangleList *tl = Get3DTriangles();
+    Image *img = AllocateScreen(NUM_ROWS, NUM_COLS);
+    for (int i = 0 ; i < 1000 ; i++) {
+
+        if (i % 250 != 0)
+            continue;
+        double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
+        InitializeScreen(img, NUM_ROWS, NUM_COLS);
+        Camera c = GetCamera(i, 1000);
+        TransformAndRenderTriangles(c, tl, img, z_buffer);
+        SaveImage(img, i);
+    }
     return 0;
 }
