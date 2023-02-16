@@ -353,12 +353,15 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             //f_left_end = f_right_end;
             //f_right_end = tmp_t;
             swap(&f_left_end, &f_right_end);
+            swap(&red_left, &red_right);
+            swap(&green_left, &green_right);
+            swap(&blue_left, &blue_right);
 
         }
 
         if (log_var == 1) {
             printf("    Rasterizing along row %d with left end = %f (Z: %f, RGB = (%f/%f/%f)\n    right end = %f (Z: %f, RGB = (%f/%f/%f)\n",
-                   i, leftEnd, f_left_end, 0.0, 0.0, 0.0, rightEnd, f_right_end, 0.0, 0.0, 0.0);
+                   i, leftEnd, f_left_end, red_left, green_left, blue_left, rightEnd, f_right_end, red_right, green_right, blue_right);
         }
 
         for ( int c = C441(leftEnd); c <= F441(rightEnd); c++) {
@@ -366,12 +369,19 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             //interpolate z(r,c) from z(leftEnd) and z(rightEnd)
             double t_cur_pixel = (c - leftEnd) / (rightEnd - leftEnd);
             double f_cur_pixel = f_left_end + t_cur_pixel * (f_right_end - f_left_end);
+            double red_inter = (red_left + t_cur_pixel * (red_right - red_left));
+            double green_inter = (green_left + t_cur_pixel * (green_right - green_left));
+            double blue_inter = (blue_left + t_cur_pixel * (blue_right - blue_left));
+
+            pixel.red = C441(red_inter * 255);
+            pixel.green = C441(green_inter * 255);
+            pixel.blue = C441(blue_inter * 255);
 
             int row = NUM_ROWS - i - 1;
             int col = c;
             if (log_var == 1) {
                 printf("        Got fragment r = %d, c = %d z = %f, color = %f/%f/%f\n",
-                       row, col, f_cur_pixel, 0.0, 0.0, 0.0);
+                       row, col, f_cur_pixel, red_inter, green_inter, blue_inter);
             }
             if (row >= NUM_ROWS || col >= NUM_COLS || row < 0 || col < 0) {
                 if (log_var == 1) {printf("row = %d | col = %d\n",row,col);}
