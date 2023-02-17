@@ -198,8 +198,10 @@ Matrix GetViewTransform(Camera c)
                  {0, 0, (c.far + c.near) / (c.far - c.near), -1},
                  {0, 0, (2 * c.far * c.near) / (c.far - c.near), 0}}};
 
-    printf("View Transform\n");
-    PrintMatrix(m);
+    if (log_var >= 1) {
+        printf("View Transform\n");
+        PrintMatrix(m);
+    }
     return m;
 }
 
@@ -239,15 +241,14 @@ GetCameraTransform(Camera c)
                 {u[1], v[1], w[1], 0},
                 {u[2], v[2], w[2], 0},
                 {u_dot_t, v_dot_t, w_dot_t, 1}}};
-
-    printf("Camera Frame: U = %f, %f, %f,\n", u[0], u[1], u[2]);
-    printf("Camera Frame: V = %f, %f, %f,\n", v[0], v[1], v[2]);
-    printf("Camera Frame: W = %f, %f, %f,\n", w[0], w[1], w[2]);
-    printf("Camera Frame: O = %f, %f, %f,\n", O[0], O[1], O[2]);
-
-    printf("Camera Transform\n");
-    PrintMatrix(rv);
-
+    if (log_var >= 1) {
+        printf("Camera Frame: U = %f, %f, %f,\n", u[0], u[1], u[2]);
+        printf("Camera Frame: V = %f, %f, %f,\n", v[0], v[1], v[2]);
+        printf("Camera Frame: W = %f, %f, %f,\n", w[0], w[1], w[2]);
+        printf("Camera Frame: O = %f, %f, %f,\n", O[0], O[1], O[2]);
+        printf("Camera Transform\n");
+        PrintMatrix(rv);
+    }
     return rv;
 }
 
@@ -664,8 +665,11 @@ void TransformAndRenderTriangles(Camera c, LightingParameters lp, TriangleList *
     Matrix gv = GetViewTransform(c);
     Matrix gd = GetDeviceTransform();
     Matrix tm = ComposeMatrices(ComposeMatrices(gt, gv), gd);
-    printf("Total transform\n");
-    PrintMatrix(tm);
+
+    if (log_var >= 1) {
+        printf("Total transform\n");
+        PrintMatrix(tm);
+    }
 
     //var for counting triangles rasterized
     double arbTriangleCount = 0;
@@ -755,7 +759,8 @@ double** InitializBuffer(int num_rows, int num_cols)
 void SaveImage(Image *img, int i)
 {
     if (log_var == 1) {printf("%s called\n", __func__);}
-    char *filename = (i == 0) ? "proj1E_frame0000.pnm" : (i == 250) ? "proj1E_frame0250.pnm" : (i == 500) ? "proj1E_frame0500.pnm" : (i == 750) ? "proj1E_frame0750.pnm" : "wrong_num.pnm";
+    char filename[32];
+    snprintf(filename, sizeof(char) * 32, "proj1F_frame%d.pnm", i);
     int colorRange = 255;
 
     FILE *fp = fopen(filename, "w");
@@ -788,10 +793,7 @@ int main(int argc, char* argv[])
     printf("Level %d logging active\n", log_var);
 
     Image *img = AllocateScreen(NUM_ROWS, NUM_COLS);
-    for (int i = 0 ; i < 1000 ; i++) {
-
-        if (i % 250 != 0)
-            continue;
+    for (int i = 0 ; i < 2; i++) {
         TriangleList *tl = Get3DTriangles();
         double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
         InitializeScreen(img, NUM_ROWS, NUM_COLS);
@@ -799,6 +801,11 @@ int main(int argc, char* argv[])
         LightingParameters lp = GetLighting(c);
         TransformAndRenderTriangles(c, lp, tl, img, z_buffer);
         SaveImage(img, i);
+        free(tl);
+        for (int i = 0; i < NUM_ROWS; i++) {
+            double* ptr = z_buffer[i];
+            free(ptr);
+        }
     }
     return 0;
 }
