@@ -23,6 +23,23 @@ typedef struct
     double          A[4][4];     // A[i][j] means row i, column j
 } Matrix;
 
+typedef struct
+{
+   double         X[3];
+   double         Y[3];
+   double         Z[3];
+   double         color[3][3]; // color[2][0] is for V2, red channel
+#ifdef NORMALS
+   double         normals[3][3]; // normals[2][0] is for V2, x-component
+#endif
+} Triangle;
+
+typedef struct
+{
+   int numTriangles;
+   Triangle *triangles;
+} TriangleList;
+
 
 void
 PrintMatrix(Matrix m)
@@ -210,22 +227,6 @@ GetDeviceTransform()
     return rv;
 }
 
-typedef struct
-{
-   double         X[3];
-   double         Y[3];
-   double         Z[3];
-   double         color[3][3]; // color[2][0] is for V2, red channel
-#ifdef NORMALS
-   double         normals[3][3]; // normals[2][0] is for V2, x-component
-#endif
-} Triangle;
-
-typedef struct
-{
-   int numTriangles;
-   Triangle *triangles;
-} TriangleList;
 
 char *
 Read3Numbers(char *tmp, double *v1, double *v2, double *v3)
@@ -548,17 +549,41 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
 void TransformAndRenderTriangles(Camera c, TriangleList *tl, Image *img, double **z_buffer)
 {
     if (log_var == 1) {printf("%s called\n", __func__);}
+
+    Matrix gt = GetCameraTransform(c);
+    Matrix gv = GetViewTransform(c);
+    Matrix gd = GetDeviceTransform();
+    Matrix tm = ComposeMatrices(ComposeMatrices(gt, gv), gd);
+    printf("Total transform\n");
+    PrintMatrix(tm);
+
+    //var for counting triangles rasterized
     double arbTriangleCount = 0;
 
     printf("Rasterizing %d triangles\n", tl->numTriangles);
 
     int len = tl->numTriangles;
-    //int len = 10;
+    //int len = 2;
 
     for (int i = 0 ; i < len; i++) {
         Triangle *curTriangle = tl->triangles+i;
-        arbTriangleCount++;
+        for (int j = 0; j < 3; j++) {
+            const double ptIn[4] = {curTriangle->X[j], curTriangle->Y[j], curTriangle->Z[j], 1};
+            double ptOut[4] = {0, 0, 0, 0};
+            TransformPoint(tm, ptIn, ptOut);
+            if (ptOut[3] != 1)
+            {
+                ptOut[0] /= ptOut[3];
+                ptOut[1] /= ptOut[3];
+                ptOut[2] /= ptOut[3];
+            }
+            if (log_var >= 2) { printf("Transformed V%d from (%f, %f, %f) to (%f, %f, %f)\n", j, ptIn[0], ptIn[1], ptIn[2], ptOut[0], ptOut[1], ptOut[2]); }
+            curTriangle->X[j] = ptOut[0];
+            curTriangle->Y[j] = ptOut[1];
+            curTriangle->Z[j] = ptOut[2];
+        }
         RasterizeArbitraryTriangle(curTriangle, img, i, z_buffer);
+        arbTriangleCount++;
     }
 
     double totalCount = (arbTriangleCount / tl->numTriangles);
@@ -594,7 +619,7 @@ Image* AllocateScreen(int num_rows, int num_cols)
             img->pixels[i][j] = black;
         }
     }
-    printf("%s initialized img of %d x %d", __func__, num_rows, num_cols);
+    printf("%s initialized img of %d x %d\n", __func__, num_rows, num_cols);
     return img;
 }
 
@@ -650,21 +675,15 @@ int main(int argc, char* argv[])
     }
     printf("Level %d logging active\n", log_var);
 
-    TriangleList *tl = Get3DTriangles();
     Image *img = AllocateScreen(NUM_ROWS, NUM_COLS);
     for (int i = 0 ; i < 1000 ; i++) {
 
         if (i % 250 != 0)
             continue;
+        TriangleList *tl = Get3DTriangles();
         double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
         InitializeScreen(img, NUM_ROWS, NUM_COLS);
         Camera c = GetCamera(i, 1000);
-        Matrix gt = GetCameraTransform(c);
-        Matrix gv = GetViewTransform(c);
-        Matrix gd = GetDeviceTransform();
-        Matrix tm = ComposeMatrices(ComposeMatrices(gt, gv), gd);
-        printf("Total transform\n");
-        PrintMatrix(tm);
         TransformAndRenderTriangles(c, tl, img, z_buffer);
         SaveImage(img, i);
     }
