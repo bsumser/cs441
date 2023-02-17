@@ -5,6 +5,7 @@
 
 #define NUM_ROWS 1000
 #define NUM_COLS 1000
+#define NORMALS
 int log_var = 0;
 
 /*------------------------STARTER CODE-------------------------------------------*/
@@ -18,6 +19,7 @@ double F441(double f)
     return floor(f+0.00001);
 }
 
+
 typedef struct
 {
     double          A[4][4];     // A[i][j] means row i, column j
@@ -28,6 +30,7 @@ typedef struct
    double         X[3];
    double         Y[3];
    double         Z[3];
+   double         shading[3];
    double         color[3][3]; // color[2][0] is for V2, red channel
 #ifdef NORMALS
    double         normals[3][3]; // normals[2][0] is for V2, x-component
@@ -138,6 +141,40 @@ GetCamera(int frame, int nframes)
     c.up[1] = 1;
     c.up[2] = 0;
     return c;
+}
+
+typedef struct
+{
+    double lightDir[3]; // The direction of the light source
+    double Ka;           // The coefficient for ambient lighting.
+    double Kd;           // The coefficient for diffuse lighting.
+    double Ks;           // The coefficient for specular lighting.
+    double alpha;        // The exponent term for specular lighting.
+} LightingParameters;
+
+
+LightingParameters
+GetLighting(Camera c)
+{
+    LightingParameters lp;
+    lp.Ka = 0.3;
+    lp.Kd = 0.7;
+    lp.Ks = 2.8;
+    lp.alpha = 50.5;
+    lp.lightDir[0] = c.position[0]-c.focus[0];
+    lp.lightDir[1] = c.position[1]-c.focus[1];
+    lp.lightDir[2] = c.position[2]-c.focus[2];
+    double mag = sqrt(lp.lightDir[0]*lp.lightDir[0]
+                    + lp.lightDir[1]*lp.lightDir[1]
+                    + lp.lightDir[2]*lp.lightDir[2]);
+    if (mag > 0)
+    {
+        lp.lightDir[0] /= mag;
+        lp.lightDir[1] /= mag;
+        lp.lightDir[2] /= mag;
+    }
+
+    return lp;
 }
 
 double *normalizeVector(double vec[3])
@@ -383,6 +420,10 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
     double f_left_end = 0;
     double f_right_end = 0;
 
+    //values for lerping shading
+    double shade_right_end = 0;
+    double shade_left_end = 0;
+
     double minY = 9999999.0;
     double maxY = -9999999.0;
     int topIdx, midIdx, botIdx;
@@ -454,6 +495,9 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
         green_right = triangle->color[topIdx][1] + (t_right * (triangle->color[botIdx][1] - triangle->color[topIdx][1]));
         blue_right = triangle->color[topIdx][2] + (t_right * (triangle->color[botIdx][2] - triangle->color[topIdx][2]));
 
+        //lerp the shading
+        shade_right_end = triangle->shading[topIdx] + (t_right * (triangle->shading[botIdx] - triangle->shading[topIdx]));
+
         // Going down and not flat bot, we work with mid-bot line
         if (i < triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[botIdx]) {
             // Assuming mid-bot line is on the right
@@ -465,6 +509,9 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             red_left = triangle->color[botIdx][0] + (t_left * (triangle->color[midIdx][0] - triangle->color[botIdx][0]));
             green_left = triangle->color[botIdx][1] + (t_left * (triangle->color[midIdx][1] - triangle->color[botIdx][1]));
             blue_left = triangle->color[botIdx][2] + (t_left * (triangle->color[midIdx][2] - triangle->color[botIdx][2]));
+
+            //lerp the shading
+            shade_left_end = triangle->shading[botIdx] + (t_left * (triangle->shading[midIdx] - triangle->shading[botIdx]));
         }
         // Going up and not flat top, we work with mid-top line
         else if (i >= triangle->Y[midIdx] && triangle->Y[midIdx] != triangle->Y[topIdx]) {
@@ -477,6 +524,9 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             red_left = triangle->color[midIdx][0] + (t_left * (triangle->color[topIdx][0] - triangle->color[midIdx][0]));
             green_left = triangle->color[midIdx][1] + (t_left * (triangle->color[topIdx][1] - triangle->color[midIdx][1]));
             blue_left = triangle->color[midIdx][2] + (t_left * (triangle->color[topIdx][2] - triangle->color[midIdx][2]));
+
+            //lerp the shading
+            shade_left_end = triangle->shading[midIdx] + (t_left * (triangle->shading[topIdx] - triangle->shading[midIdx]));
         }
         // This else here means if there's a flat top triangle, don't scan top. And if there's a flat bot triangle, don't scan bot
         else
@@ -497,6 +547,7 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             swap(&red_left, &red_right);
             swap(&green_left, &green_right);
             swap(&blue_left, &blue_right);
+            swap(&shade_left_end, &shade_right_end);
 
         }
 
@@ -514,9 +565,11 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
             double green_inter = (green_left + t_cur_pixel * (green_right - green_left));
             double blue_inter = (blue_left + t_cur_pixel * (blue_right - blue_left));
 
-            pixel.red = C441(red_inter * 255);
-            pixel.green = C441(green_inter * 255);
-            pixel.blue = C441(blue_inter * 255);
+            double shade_inter = (shade_left_end + t_cur_pixel * (shade_right_end - shade_left_end));
+
+            pixel.red = C441(red_inter * 255 * shade_inter);
+            pixel.green = C441(green_inter * 255 * shade_inter);
+            pixel.blue = C441(blue_inter * 255 * shade_inter);
 
             int row = NUM_ROWS - i - 1;
             int col = c;
@@ -546,7 +599,34 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
     }
 }
 
-void TransformAndRenderTriangles(Camera c, TriangleList *tl, Image *img, double **z_buffer)
+double max(double a, double b)
+{
+    if (a > b) { return a;}
+    if (a < b) { return b;}
+
+    return 666;
+}
+
+
+void CalculatePhongShading(LightingParameters lp, Triangle *triangle, int vertex)
+{
+    if (log_var == 1) {printf("%s called\n", __func__);}
+
+    double L_mag = sqrt(lp.lightDir[0] * lp.lightDir[0] + lp.lightDir[1] * lp.lightDir[1] + lp.lightDir[2] * lp.lightDir[2]);
+
+    double L_norm[3] = {lp.lightDir[0] / L_mag, lp.lightDir[1] / L_mag, lp.lightDir[2] / L_mag};
+
+    double LN = 0;
+
+    double diffuse = max(0, LN);
+    double specular = 0;
+
+    //double Shading_Amount = lp.Ka + lp.Kd * diffuse + lp.Ks * specular;
+    double Shading_Amount = lp.Ka;
+    triangle->shading[vertex] = Shading_Amount;
+}
+
+void TransformAndRenderTriangles(Camera c, LightingParameters lp, TriangleList *tl, Image *img, double **z_buffer)
 {
     if (log_var == 1) {printf("%s called\n", __func__);}
 
@@ -582,6 +662,9 @@ void TransformAndRenderTriangles(Camera c, TriangleList *tl, Image *img, double 
             curTriangle->Y[j] = ptOut[1];
             curTriangle->Z[j] = ptOut[2];
         }
+        CalculatePhongShading(lp, curTriangle, 0);
+        CalculatePhongShading(lp, curTriangle, 1);
+        CalculatePhongShading(lp, curTriangle, 2);
         RasterizeArbitraryTriangle(curTriangle, img, i, z_buffer);
         arbTriangleCount++;
     }
@@ -593,6 +676,7 @@ void TransformAndRenderTriangles(Camera c, TriangleList *tl, Image *img, double 
     printf("Rasterized %f percent of triangles\n", totalCount);
 
 }
+
 
 void InitializeScreen(Image *img, int num_rows, int num_cols)
 {
@@ -684,7 +768,8 @@ int main(int argc, char* argv[])
         double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
         InitializeScreen(img, NUM_ROWS, NUM_COLS);
         Camera c = GetCamera(i, 1000);
-        TransformAndRenderTriangles(c, tl, img, z_buffer);
+        LightingParameters lp = GetLighting(c);
+        TransformAndRenderTriangles(c, lp, tl, img, z_buffer);
         SaveImage(img, i);
     }
     return 0;
