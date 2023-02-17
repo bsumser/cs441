@@ -200,10 +200,13 @@ GetCameraTransform(Camera c)
 Matrix
 GetDeviceTransform()
 {
-    Matrix rv;
-
     /* YOU IMPLEMENT THIS */
-
+    double n = NUM_ROWS;
+    double m = NUM_COLS;
+    Matrix rv = {{{n/2, 0, 0, 0},
+                  {0, m/2, 0, 0},
+                  {0, 0, 1, 0},
+                  {n/2, m/2, 0, 1}}};
     return rv;
 }
 
@@ -656,8 +659,12 @@ int main(int argc, char* argv[])
         double **z_buffer = InitializBuffer(NUM_ROWS, NUM_COLS);
         InitializeScreen(img, NUM_ROWS, NUM_COLS);
         Camera c = GetCamera(i, 1000);
-        GetCameraTransform(c);
-        GetViewTransform(c);
+        Matrix gt = GetCameraTransform(c);
+        Matrix gv = GetViewTransform(c);
+        Matrix gd = GetDeviceTransform();
+        Matrix tm = ComposeMatrices(ComposeMatrices(gt, gv), gd);
+        printf("Total transform\n");
+        PrintMatrix(tm);
         TransformAndRenderTriangles(c, tl, img, z_buffer);
         SaveImage(img, i);
     }
