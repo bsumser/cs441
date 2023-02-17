@@ -567,9 +567,14 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
 
             double shade_inter = (shade_left_end + t_cur_pixel * (shade_right_end - shade_left_end));
 
-            pixel.red = C441(red_inter * 255 * shade_inter);
-            pixel.green = C441(green_inter * 255 * shade_inter);
-            pixel.blue = C441(blue_inter * 255 * shade_inter);
+            double finalRed = shade_inter * red_inter > 1.0 ? 1.0 : shade_inter * red_inter;
+            double finalGreen = shade_inter * green_inter > 1.0 ? 1.0 : shade_inter * green_inter;
+            double finalBlue = shade_inter * blue_inter > 1.0 ? 1.0 : shade_inter * blue_inter;
+
+            pixel.red = C441(finalRed * 255);
+            pixel.green = C441(finalGreen * 255);
+            pixel.blue = C441(finalBlue * 255);
+
 
             int row = NUM_ROWS - i - 1;
             int col = c;
@@ -584,11 +589,11 @@ void RasterizeArbitraryTriangle(Triangle *triangle, Image *img, int triangleNum,
 
             //if z(r,c) > depthBuffer(r,c), exit if less than current z_buffer pixel
             if (f_cur_pixel < z_buffer[row][col]) {
-                if (log_var == 2) { printf("%f < %f\n", f_cur_pixel, z_buffer[row][col]); }
+                if (log_var >= 2) { printf("%f < %f\n", f_cur_pixel, z_buffer[row][col]); }
                 continue;
             }
 
-            if (log_var == 2) {
+            if (log_var >= 2) {
                 printf("inserting pixel at pixels[%d][%d]\n", row, col);
                 printf("inserting pixel at z_buffer[%d][%d]\n", row, col);
             }
@@ -608,21 +613,46 @@ double max(double a, double b)
 }
 
 
-void CalculatePhongShading(LightingParameters lp, Triangle *triangle, int vertex)
+void CalculatePhongShading(LightingParameters lp, Triangle *triangle, Camera c, int vertex)
 {
     if (log_var == 1) {printf("%s called\n", __func__);}
+    if (log_var >= 1) { printf("Working on vertex %d\n", vertex);}
 
-    double L_mag = sqrt(lp.lightDir[0] * lp.lightDir[0] + lp.lightDir[1] * lp.lightDir[1] + lp.lightDir[2] * lp.lightDir[2]);
+    //normalizeVector(vec[3]);
 
-    double L_norm[3] = {lp.lightDir[0] / L_mag, lp.lightDir[1] / L_mag, lp.lightDir[2] / L_mag};
+    double V[3] = {c.position[0] - triangle->X[vertex], c.position[1] - triangle->Y[vertex], c.position[2] - triangle->Z[vertex]};
+    double L[3] = {lp.lightDir[0], lp.lightDir[1], lp.lightDir[2]};
+    *V = *normalizeVector(V);
+    *L = *normalizeVector(L);
 
-    double LN = 0;
+    double N_mag = sqrt(triangle->normals[vertex][0] * triangle->normals[vertex][0] + triangle->normals[vertex][1] * triangle->normals[vertex][1] + triangle->normals[vertex][2] * triangle->normals[vertex][2]);
+
+    double LN = {L[0] * triangle->normals[vertex][0] + L[1] * triangle->normals[vertex][1] + L[2] * triangle->normals[vertex][2]};
+
+    double R[3] = {2 * LN * triangle->normals[vertex][0] - L[0], 2 * LN * triangle->normals[vertex][1] - L[1], 2 * LN * triangle->normals[vertex][2] - L[2]};
+    *R = *normalizeVector(R);
+
+    double RV = {V[0] * R[0] + V[1] * R[1] + V[2] * R[2]};
 
     double diffuse = max(0, LN);
-    double specular = 0;
+    double specular = RV > 0 ? lp.Ks * pow(RV, lp.alpha) : 0;
 
-    //double Shading_Amount = lp.Ka + lp.Kd * diffuse + lp.Ks * specular;
-    double Shading_Amount = lp.Ka;
+
+    double Shading_Amount = lp.Ka + lp.Kd * diffuse + lp.Ks * specular;
+    if (log_var >= 1) {
+        printf("        View dir for pt %f, %f, %f, is %f, %f, %f\n", triangle->X[vertex], triangle->Y[vertex], triangle->Z[vertex], V[0], V[1], V[2]);
+        printf("        Normal is %f, %f, %f\n", triangle->normals[vertex][0], triangle->normals[vertex][1], triangle->normals[vertex][2]);
+        printf("        LdotN is %f\n", LN);
+        printf("    Diffuse is %f\n", diffuse);
+        printf("        Reflection vector R is %f, %f, %f\n", R[0], R[1], R[2]);
+        printf("        RdotV is %f\n", RV);
+        printf("    Specular component is %f\n", specular);
+        printf("    Total value for vertex is %f\n", Shading_Amount);
+    }
+
+    //double Shading_Amount = lp.Ka;
+    //double Shading_Amount = lp.Kd * diffuse;
+    //double Shading_Amount = specular;
     triangle->shading[vertex] = Shading_Amount;
 }
 
@@ -648,6 +678,7 @@ void TransformAndRenderTriangles(Camera c, LightingParameters lp, TriangleList *
     for (int i = 0 ; i < len; i++) {
         Triangle *curTriangle = tl->triangles+i;
         for (int j = 0; j < 3; j++) {
+            CalculatePhongShading(lp, curTriangle, c, j);
             const double ptIn[4] = {curTriangle->X[j], curTriangle->Y[j], curTriangle->Z[j], 1};
             double ptOut[4] = {0, 0, 0, 0};
             TransformPoint(tm, ptIn, ptOut);
@@ -662,9 +693,6 @@ void TransformAndRenderTriangles(Camera c, LightingParameters lp, TriangleList *
             curTriangle->Y[j] = ptOut[1];
             curTriangle->Z[j] = ptOut[2];
         }
-        CalculatePhongShading(lp, curTriangle, 0);
-        CalculatePhongShading(lp, curTriangle, 1);
-        CalculatePhongShading(lp, curTriangle, 2);
         RasterizeArbitraryTriangle(curTriangle, img, i, z_buffer);
         arbTriangleCount++;
     }
