@@ -1,5 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
-#include "glad/glad.h"
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 //calllback function when resizing window
