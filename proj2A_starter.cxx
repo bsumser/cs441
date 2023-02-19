@@ -12,7 +12,7 @@
 
 #define PHASE3
 #define PHASE4
-//#define PHASE5
+#define PHASE5
 
 void _print_shader_info_log(GLuint shader_index) {
   int max_len = 2048;
@@ -156,6 +156,30 @@ const char *phase345VertexShader =
   // camaraloc  : is the location of the camera
   // lightdir   : is the direction of the light
   // lightcoeff : represents a vec4(Ka, Kd, Ks, alpha) from LightingParams of 1F
+  "float LN = 0;\n"
+  "float RV = 0;\n"
+  "float l_mag = 0;\n"
+  "float R_mag = 0;\n"
+  "float v_mag = 0;\n"
+  "float norm_mag = 0;\n"
+  "norm_mag = sqrt(vertex_normal[0] * vertex_normal[0] + vertex_normal[1] * vertex_normal[1] + vertex_normal[2] * vertex_normal[2]);\n"
+  "float N_norm[3] = float[3](vertex_normal[0] / norm_mag, vertex_normal[1] / norm_mag, vertex_normal[2] / norm_mag);\n"
+  "float R[3] = float[3](2 * LN * vertex_normal[0] - lightdir[0], 2 * LN * vertex_normal[1] - lightdir[1], 2 * LN * vertex_normal[2] - lightdir[2]);\n"
+  "l_mag = sqrt(lightdir[0] * lightdir[0] + lightdir[1] * lightdir[1] + lightdir[2] * lightdir[2]);\n"
+  "float L_norm[3] = float[3](lightdir[0] / l_mag, lightdir[1] / l_mag, lightdir[2] / l_mag);\n"
+  "float V[3] = float[3](cameraloc[0] - vertex_position[0], cameraloc[1] - vertex_position[1], cameraloc[2] - vertex_position[2]);\n"
+  "v_mag = sqrt(V[0] * V[0] + V[1] * V[1] + V[2] * V[2]);\n"
+  "float V_norm[3] = float[3](V[0] / v_mag, V[1] / v_mag, V[2] / v_mag);\n"
+  "R_mag = sqrt(R[0] * R[0] + R[1] * R[1] + R[2] * R[2]);\n"
+  "float R_norm[3] = float[3](R[0] / R_mag, R[1] / R_mag, R[2] / R_mag);\n"
+  "RV = V_norm[0] * R_norm[0] + V_norm[1] * R_norm[1] + V_norm[2] * R_norm[2];\n"
+  "LN = L_norm[0] * N_norm[0] + L_norm[1] * N_norm[1] + L_norm[2] * N_norm[2];\n"
+  "float diffuse = LN > 0 ? LN : 0;\n"
+  "float specular = RV > 0 ? lightcoeff[2] * pow(RV, lightcoeff[3]) : 0;\n"
+  "//shading_amount = lightcoeff[0];\n"
+  "shading_amount = lightcoeff[0] + lightcoeff[1] * diffuse;\n"
+  "//shading_amount = lightcoeff[0] + lightcoeff[1] * diffuse + lightcoeff[2] * specular;\n"
+  "//shading_amount = lightcoeff[0] + lightcoeff[1] * diffuse + lightcoeff[2] * specular;\n"
 #endif
 
   "}\n";
@@ -177,10 +201,10 @@ const char *phase345FragmentShader =
   "float f2 = 0.25 + (t2 * (data - 1));\n"
   "float t3 = (1.0 - 1.0) / (4.5 - 1);\n"
   "float f3 = 1.0 + (t3 * (data - 1));\n"
-  "frag_color[0] = f1;\n"
-  "frag_color[1] = f2;\n"
-  "frag_color[2] = f3;\n"
-  "frag_color[3] = f1;\n"
+  "frag_color[0] = f1 * shading_amount;\n"
+  "frag_color[1] = f2 * shading_amount;\n"
+  "frag_color[2] = f3 * shading_amount;\n"
+  "frag_color[3] = f1 * shading_amount;\n"
   "}\n"
   "if (4.5 < data && data < 6.5) {\n"
   "float t1 = (1.0 - 1.0) / (6 - 4.5);\n"
@@ -189,10 +213,10 @@ const char *phase345FragmentShader =
   "float f2 = 1.0 + (t2 * (data - 4.5));\n"
   "float t3 = (0.25 - 1.0) / (6 - 4.5);\n"
   "float f3 = 1.0 + (t3 * (data - 4.5));\n"
-  "frag_color[0] = f1;\n"
-  "frag_color[1] = f2;\n"
-  "frag_color[2] = f3;\n"
-  "frag_color[3] = f1;\n"
+  "frag_color[0] = f1 * shading_amount;\n"
+  "frag_color[1] = f2 * shading_amount;\n"
+  "frag_color[2] = f3 * shading_amount;\n"
+  "frag_color[3] = f1 * shading_amount;\n"
   "}\n"
 #endif
 
