@@ -1,0 +1,15 @@
+#+title: Prop
+
+* What have we covered?
+** Saving raw bytes
+** Triangle Rasterization
+** Varying depth/ z buffer
+** Texturing
+** Phong Lighting
+** Ray tracing
+
+* What would be implemented?
+** Save data/Chunk loading (byte serialization)
+** Sprite loading (rasterizaton)
+** Parallax Scrolling (Z buffer)
+** 2D lighting (Phong)
