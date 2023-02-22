@@ -1,0 +1,96 @@
+\documentclass{article}
+
+
+\usepackage[both]{ercformatting} % Pass options `b1` or `b2` to compile the two versions for submission
+
+
+
+\acronym{ACRONYM}
+\institution{My Uni}
+\author[Last-name]{Full-name}
+\granttypeyear{Starting Grant 2022}
+\title{My Amazing Project}
+
+
+
+
+\begin{document}
+\maketitle
+
+
+
+\begin{b1}
+	\begin{abstract}
+		Abstract for B1 goes here.
+	\end{abstract}
+\end{b1}
+
+
+
+
+
+\begin{b2}
+	\part{Section a: State of the art and objectives}
+\end{b2}
+\begin{b1}
+	\part{Section a: Extended Synopsis of the scientific proposal}
+\end{b1}
+
+
+\section{About this package}
+
+The template allows you to work on B1 and B2 simultaneously. By passing the relevant option to the package, you can compile the document to get both documents, ready to submit.  E.g., \verb|\usepackage[b1]{ercformatting}|.
+
+
+This is an unofficial template. You must check yourself that the results follow the ERC guidance!
+
+\section{Using versions}
+
+This makes use of the `versions` package.
+ %https://ctan.org/pkg/versions?lang=en
+
+\begin{b1}
+I'm in B1.
+\end{b1}
+
+\begin{b2}
+I'm in B2.
+\end{b2}
+
+I'm in both.
+
+
+
+
+
+
+
+\begin{b2}
+\part{Section b: Methodology}
+
+Here's a reference: \cite{texbook}
+\end{b2}
+
+
+
+
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{mybib.bib}
+\newpage
+
+
+
+\begin{b1}
+\includepdf[pages=-]{b1-sectionb.pdf}
+
+\part{Section c:  Early achievements track-record}
+
+
+\end{b1}
+
+
+
+
+\end{document}
