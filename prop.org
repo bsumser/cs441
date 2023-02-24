@@ -12,4 +12,5 @@
 ** Save data/Chunk loading (byte serialization)
 ** Sprite loading (rasterizaton)
 ** Parallax Scrolling (Z buffer)
+** Asset layering (Z buffer)
 ** 2D lighting (Phong)
