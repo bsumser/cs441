@@ -5,37 +5,55 @@ For my term project I am going to implement a 2d game engine.
 The engine will have a focus on simulating every pixel and different
 interactions between in game materials. This will be heavily inspired by the
 game Noita, whose developer "Nolla Games" gave a presentation at GDC which
-discussed the tech used in their game.
+discussed the tech used in their game. The central idea for this project is
+to get a basic game engine working, that could be extended into fully fledged games.
+All of the core features will be more or less functional in form, lacking
+polish but with room for extensibility.
 
-* Core Features
-** Player Movement
-** Collisions
-** Basic Physics (Gravity, forces propelling objects)
-** Saving Data
-** Texturing
-** Chunking
-With a heavy emphasis on simulating every pixel in the game, this could lead to a large amount of data
-needing to be processed every frame. By breaking a level into "chunks", instead of rendering and simulating
-everything in the level at once, it would only be neccesary to load in chunks in view of the player, or chunks
-that would be affected by simulated game objects in a rendered chunk.
-
-* Stretch Features
-If I am making good headway on the project, here are some of the features I would like to also implement given enough time.
-** Multithreading
-I have taken the High Performance Computing, and Operating Systems Courses at the university, so I do have some experience
-with achieving paralelism and multithreading.
-
-* What have we covered?
+* What are some the concepts have we covered?
 ** Saving raw bytes
 ** Triangle Rasterization
 ** Varying depth / z buffer
 ** Texturing
-** Phong Shading
-** Ray tracing
+** Phong Shading/Ray tracing
 
-* How can these concepts be appplied to a game engine?
+* How can these concepts be applied to a game engine?
 ** Save data/Chunk loading (byte serialization)
 ** Sprite loading (rasterizaton)
 ** Parallax Scrolling (Z buffer)
 ** Asset layering (Z buffer)
 ** 2D lighting (Phong)
+
+* Core Features
+** Player Movement
+Basic player movement will be neccesary, including jumping and gravity physics.
+** Collisions
+Rigid body physics will be implemented, for basic interactions between the player/world/enemies.
+** Basic Physics (Gravity, forces propelling objects)
+I will attempt to implement sand/water physics using a commonly used falling sand algorithm.
+Gases will also use the falling sand method, but may be more accurately simulated using cellular automata.
+** Saving Data
+Using the method from class of writing raw bytes to a file, this could be used for save files, or chunk loading.
+To my understanding, writing the raw data will also help the engine be more platform agnostic.
+** Parallax Scrolling
+Different z-layers of background assets can help a 2D game feel more alive. Having different background layers scroll
+by at different rates would be simple to implement, and help solidify the z-buffer concept.
+** Chunking
+With a heavy emphasis on simulating every pixel in the game, this could lead to a large amount of data
+needing to be processed every frame. By breaking a level into "chunks", instead of rendering and simulating
+everything in the level at once, it would only be neccesary to load in chunks in view of the player, or chunks
+that would be affected by simulated game objects in a rendered chunk.
+** Texturing
+Basic texture applications for game objects would be a good way to gain experience using them, since we never really
+applied this in the coursework.
+** Phong Shading
+Applying the phong shading we have programmed so far would be simple, and it would be interesting to see the
+performance in a situation with multiple light sources.
+
+* Stretch Features
+If I am making good headway on the project, here are some of the features I would like to also implement given enough time.
+** Multithreading
+I have taken the High Performance Computing, and Operating Systems Courses at the university, so I do have some experience
+with achieving parallelism and multithreading. I was thinking that this may be applicable towards chunk loading, but
+the cost of context switching may outway the benefits depending on the size of the chunks, and how many objects are simulated
+in them.

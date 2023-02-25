@@ -509,13 +509,28 @@ void SetUpEyeball(glm::mat4 modelSoFar, RenderManager &rm)
 void SetUpHead(glm::mat4 modelSoFar, RenderManager &rm)
 {
    // place center of head at X=3, Y=1, Z=0
-   glm::mat4 translate = TranslateMatrix(0.0, 0.0, 4.5);
+   glm::mat4 translate = TranslateMatrix(3, 1, 0);
+   glm::mat4 headTranslate = TranslateMatrix(0, 0, -0.75);
+   glm::mat4 headScale = ScaleMatrix(0.5, 0.5, 0.6);
+   rm.SetColor(0.0, 0.0, 0.0);
+   rm.Render(RenderManager::SPHERE, translate * headScale * headTranslate);
 
-   glm::mat4 leftEyeTranslate = TranslateMatrix(-0.3, 0.0, 0.0);
+   glm::mat4 snoutTranslate = TranslateMatrix(0, -0.15, 0.5);
+   glm::mat4 snoutScale = ScaleMatrix(0.5, 0.5, 1);
+   rm.SetColor(0.39, 0.26, 0.12);
+   rm.Render(RenderManager::SPHERE, translate * snoutTranslate * snoutScale * headScale * headTranslate);
+
+   glm::mat4 neck = ScaleMatrix(0.25, 0.25, 1.0);
+   glm::mat4 neckTranslate = TranslateMatrix(0.0, -0.2, -1.8);
+   glm::mat4 neckRotate = RotateMatrix(-45, 0, 1, 0);
+   rm.SetColor(0.0, 0.0, 0.0);
+   rm.Render(RenderManager::CYLINDER, neck * neckRotate);
+
+   glm::mat4 leftEyeTranslate = TranslateMatrix(-0.15, 0.25, 0);
    glm::mat4 rotateInFromLeft = RotateMatrix(15, 0, 1, 0);
    SetUpEyeball(modelSoFar*translate*leftEyeTranslate*rotateInFromLeft, rm);
 
-   glm::mat4 rightEyeTranslate = TranslateMatrix(0.3, 0.0, 0.0);
+   glm::mat4 rightEyeTranslate = TranslateMatrix(0.15, 0.25, 0);
    glm::mat4 rotateInFromRight = RotateMatrix(-15, 0, 1, 0);
    SetUpEyeball(modelSoFar*translate*rightEyeTranslate*rotateInFromRight, rm);
 }
@@ -538,12 +553,7 @@ SetUpDog(int counter, RenderManager &rm)
 /*** THIS CODE JUST MAKES THREE SPHERES AND VARIES THEIR
  *** COLOR BASED ON THE COUNTER
  */
-    glm::mat4 M1 = TranslateMatrix(0, 0, 0);
-    glm::mat4 scale = ScaleMatrix(1.0, 1.0, 2.0);
-    glm::mat4 bodyRotate = RotateMatrix(90, 0, 90, 0);
-    rm.SetColor(0.0, 0.0, 0.0);
-    rm.Render(RenderManager::SPHERE, M1 * scale * bodyRotate);
-    
+
     //glm::mat4 M2 = TranslateMatrix(-1.0, 0, 0);
     //rm.SetColor(0.0, 0.0, 0.0);
     //rm.Render(RenderManager::SPHERE, M2);
