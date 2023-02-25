@@ -531,24 +531,26 @@ SetUpDog(int counter, RenderManager &rm)
 
     SetUpHead(identity, rm);
 
-    glm::mat4 M4 = ScaleMatrix(1.0, 1.0, 3.5);
-    rm.SetColor(0.0, 0.0, 0.0);
-    rm.Render(RenderManager::CYLINDER, M4);
+    //glm::mat4 M4 = ScaleMatrix(1.0, 1.0, 3.5);
+    //rm.SetColor(0.0, 0.0, 0.0);
+    //rm.Render(RenderManager::CYLINDER, M4);
 
 /*** THIS CODE JUST MAKES THREE SPHERES AND VARIES THEIR
  *** COLOR BASED ON THE COUNTER
  */
-    glm::mat4 M1 = TranslateMatrix(1.0, 0, 0);
+    glm::mat4 M1 = TranslateMatrix(0, 0, 0);
+    glm::mat4 scale = ScaleMatrix(1.0, 1.0, 2.0);
+    glm::mat4 bodyRotate = RotateMatrix(90, 0, 90, 0);
     rm.SetColor(0.0, 0.0, 0.0);
-    rm.Render(RenderManager::SPHERE, M1);
+    rm.Render(RenderManager::SPHERE, M1 * scale * bodyRotate);
     
-    glm::mat4 M2 = TranslateMatrix(-1.0, 0, 0);
-    rm.SetColor(0.0, 0.0, 0.0);
-    rm.Render(RenderManager::SPHERE, M2);
-    
-    glm::mat4 M3 = TranslateMatrix(0.0, 0.0, 3.5);
-    rm.SetColor(1.0, 0.75, 0.79);
-    rm.Render(RenderManager::SPHERE, M3);
+    //glm::mat4 M2 = TranslateMatrix(-1.0, 0, 0);
+    //rm.SetColor(0.0, 0.0, 0.0);
+    //rm.Render(RenderManager::SPHERE, M2);
+    //
+    //glm::mat4 M3 = TranslateMatrix(0.0, 0.0, 3.5);
+    //rm.SetColor(1.0, 0.75, 0.79);
+    //rm.Render(RenderManager::SPHERE, M3);
 }
     
 const char *GetVertexShader()

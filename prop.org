@@ -1,14 +1,39 @@
-#+title: Prop
+#+title: CS 441 Computer Graphics Term Project
+
+* Introduction
+For my term project I am going to implement a 2d game engine.
+The engine will have a focus on simulating every pixel and different
+interactions between in game materials. This will be heavily inspired by the
+game Noita, whose developer "Nolla Games" gave a presentation at GDC which
+discussed the tech used in their game.
+
+* Core Features
+** Player Movement
+** Collisions
+** Basic Physics (Gravity, forces propelling objects)
+** Saving Data
+** Texturing
+** Chunking
+With a heavy emphasis on simulating every pixel in the game, this could lead to a large amount of data
+needing to be processed every frame. By breaking a level into "chunks", instead of rendering and simulating
+everything in the level at once, it would only be neccesary to load in chunks in view of the player, or chunks
+that would be affected by simulated game objects in a rendered chunk.
+
+* Stretch Features
+If I am making good headway on the project, here are some of the features I would like to also implement given enough time.
+** Multithreading
+I have taken the High Performance Computing, and Operating Systems Courses at the university, so I do have some experience
+with achieving paralelism and multithreading.
 
 * What have we covered?
 ** Saving raw bytes
 ** Triangle Rasterization
-** Varying depth/ z buffer
+** Varying depth / z buffer
 ** Texturing
-** Phong Lighting
+** Phong Shading
 ** Ray tracing
 
-* What would be implemented?
+* How can these concepts be appplied to a game engine?
 ** Save data/Chunk loading (byte serialization)
 ** Sprite loading (rasterizaton)
 ** Parallax Scrolling (Z buffer)
