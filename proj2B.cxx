@@ -512,19 +512,25 @@ void SetUpHead(glm::mat4 modelSoFar, RenderManager &rm)
    glm::mat4 translate = TranslateMatrix(3, 1, 0);
    glm::mat4 headTranslate = TranslateMatrix(0, 0, -0.75);
    glm::mat4 headScale = ScaleMatrix(0.5, 0.5, 0.6);
-   rm.SetColor(0.0, 0.0, 0.0);
-   rm.Render(RenderManager::SPHERE, translate * headScale * headTranslate);
+   rm.SetColor(0.02, 0.02, 0.02);
+   rm.Render(RenderManager::SPHERE, translate * modelSoFar * headScale * headTranslate);
+
+   glm::mat4 noseTranslate = TranslateMatrix(0, -0.1, 0.6);
+   glm::mat4 noseScale = ScaleMatrix(0.1, 0.1, 0.1);
+   rm.SetColor(0.18, 0.09, 0.1);
+   rm.Render(RenderManager::SPHERE, translate * modelSoFar * noseTranslate * noseScale);
+
 
    glm::mat4 snoutTranslate = TranslateMatrix(0, -0.15, 0.5);
    glm::mat4 snoutScale = ScaleMatrix(0.5, 0.5, 1);
    rm.SetColor(0.39, 0.26, 0.12);
    rm.Render(RenderManager::SPHERE, translate * snoutTranslate * snoutScale * headScale * headTranslate);
 
-   glm::mat4 neck = ScaleMatrix(0.25, 0.25, 1.0);
-   glm::mat4 neckTranslate = TranslateMatrix(0.0, -0.2, -1.8);
-   glm::mat4 neckRotate = RotateMatrix(-45, 0, 1, 0);
-   rm.SetColor(0.0, 0.0, 0.0);
-   rm.Render(RenderManager::CYLINDER, neck * neckRotate);
+   //glm::mat4 neck = ScaleMatrix(0.25, 0.25, 1.0);
+   //glm::mat4 neckTranslate = TranslateMatrix(0.0, -0.2, -1.8);
+   //glm::mat4 neckRotate = RotateMatrix(-45, 0, 1, 0);
+   //rm.SetColor(0.0, 0.0, 0.0);
+   //rm.Render(RenderManager::CYLINDER, neck * neckRotate);
 
    glm::mat4 leftEyeTranslate = TranslateMatrix(-0.15, 0.25, 0);
    glm::mat4 rotateInFromLeft = RotateMatrix(15, 0, 1, 0);
@@ -533,6 +539,14 @@ void SetUpHead(glm::mat4 modelSoFar, RenderManager &rm)
    glm::mat4 rightEyeTranslate = TranslateMatrix(0.15, 0.25, 0);
    glm::mat4 rotateInFromRight = RotateMatrix(-15, 0, 1, 0);
    SetUpEyeball(modelSoFar*translate*rightEyeTranslate*rotateInFromRight, rm);
+}
+
+void SetUpBody(glm::mat4 modelSoFar, RenderManager &rm)
+{
+    glm::mat4 translate = TranslateMatrix(2.9, 0.5, -2.2);
+    glm::mat4 body = ScaleMatrix(0.85, 0.85, 1.5);
+    rm.SetColor(0.0, 0.0, 0.0);
+    rm.Render(RenderManager::SPHERE, modelSoFar * translate * body);
 }
 
 void
@@ -545,6 +559,7 @@ SetUpDog(int counter, RenderManager &rm)
        var=1-var;
 
     SetUpHead(identity, rm);
+    SetUpBody(identity, rm);
 
     //glm::mat4 M4 = ScaleMatrix(1.0, 1.0, 3.5);
     //rm.SetColor(0.0, 0.0, 0.0);
