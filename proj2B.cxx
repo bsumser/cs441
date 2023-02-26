@@ -501,19 +501,42 @@ void SetUpEyeball(glm::mat4 modelSoFar, RenderManager &rm)
    rm.Render(RenderManager::SPHERE, modelSoFar*scaled10);
 
    glm::mat4 translate = TranslateMatrix(0, 0, 0.95);
+   glm::mat4 browTranslate = TranslateMatrix(0, 1.1, -1.5);
    glm::mat4 scaled30 = ScaleMatrix(0.3, 0.3, 0.3);
-   rm.SetColor(0,0,0);
+   glm::mat4 eyebrows = ScaleMatrix(0.7, 0.7, 0.7);
+   rm.SetColor(0.39, 0.26, 0.12);
    rm.Render(RenderManager::SPHERE, modelSoFar*scaled10*translate*scaled30);
+   rm.Render(RenderManager::SPHERE, modelSoFar*scaled10*browTranslate*eyebrows);
 }
 
-void SetUpHead(glm::mat4 modelSoFar, RenderManager &rm)
+void SetUpHead(glm::mat4 modelSoFar, int counter, RenderManager &rm)
 {
+    int angle = counter % 70;
+    if (angle < 0) { angle++;}
+    if (angle > 34) { angle--;}
    // place center of head at X=3, Y=1, Z=0
-   glm::mat4 translate = TranslateMatrix(3, 1, 0);
+   glm::mat4 translate = TranslateMatrix(3, 1, 0.4);
    glm::mat4 headTranslate = TranslateMatrix(0, 0, -0.75);
    glm::mat4 headScale = ScaleMatrix(0.5, 0.5, 0.6);
    rm.SetColor(0.02, 0.02, 0.02);
    rm.Render(RenderManager::SPHERE, translate * modelSoFar * headScale * headTranslate);
+
+   //render the neck
+   glm::mat4 neckTranslate = TranslateMatrix(0, -0.33, -1.7);
+   glm::mat4 neckScale = ScaleMatrix(0.3, 0.3, 1.35);
+   glm::mat4 neckRotate = RotateMatrix(30, 1, 0, 0);
+   rm.SetColor(0.02, 0.02, 0.02);
+   rm.Render(RenderManager::CYLINDER, translate * modelSoFar * neckTranslate * neckScale * neckRotate);
+
+   //render the ears
+   glm::mat4 rightEarTranslate = TranslateMatrix(0.5, 0.1, -0.5);
+   glm::mat4 leftEarTranslate = TranslateMatrix(-0.5, 0.1, -0.5);
+   glm::mat4 earScale = ScaleMatrix(0.1, 0.3, 0.3);
+   glm::mat4 leftEarRotate = RotateMatrix(angle, 0, 1, -1);
+   glm::mat4 rightEarRotate = RotateMatrix(-angle, 0, 1, -1);
+   rm.SetColor(0.39, 0.26, 0.12);
+   rm.Render(RenderManager::SPHERE, translate * modelSoFar * rightEarTranslate * rightEarRotate * earScale);
+   rm.Render(RenderManager::SPHERE, translate * modelSoFar * leftEarTranslate * leftEarRotate * earScale);
 
    glm::mat4 noseTranslate = TranslateMatrix(0, -0.1, 0.6);
    glm::mat4 noseScale = ScaleMatrix(0.1, 0.1, 0.1);
@@ -526,17 +549,16 @@ void SetUpHead(glm::mat4 modelSoFar, RenderManager &rm)
    rm.SetColor(0.39, 0.26, 0.12);
    rm.Render(RenderManager::SPHERE, translate * snoutTranslate * snoutScale * headScale * headTranslate);
 
-   //glm::mat4 neck = ScaleMatrix(0.25, 0.25, 1.0);
-   //glm::mat4 neckTranslate = TranslateMatrix(0.0, -0.2, -1.8);
-   //glm::mat4 neckRotate = RotateMatrix(-45, 0, 1, 0);
-   //rm.SetColor(0.0, 0.0, 0.0);
-   //rm.Render(RenderManager::CYLINDER, neck * neckRotate);
+   glm::mat4 mouthTranslate = TranslateMatrix(0, -0.25, 0.45);
+   glm::mat4 mouthScale = ScaleMatrix(0.5, 0.1, 1);
+   rm.SetColor(0.02, 0.02, 0.02);
+   rm.Render(RenderManager::SPHERE, translate * mouthTranslate * mouthScale * headScale * headTranslate);
 
-   glm::mat4 leftEyeTranslate = TranslateMatrix(-0.15, 0.25, 0);
+   glm::mat4 leftEyeTranslate = TranslateMatrix(-0.15, 0.25, -0.03);
    glm::mat4 rotateInFromLeft = RotateMatrix(15, 0, 1, 0);
    SetUpEyeball(modelSoFar*translate*leftEyeTranslate*rotateInFromLeft, rm);
 
-   glm::mat4 rightEyeTranslate = TranslateMatrix(0.15, 0.25, 0);
+   glm::mat4 rightEyeTranslate = TranslateMatrix(0.15, 0.25, -0.03);
    glm::mat4 rotateInFromRight = RotateMatrix(-15, 0, 1, 0);
    SetUpEyeball(modelSoFar*translate*rightEyeTranslate*rotateInFromRight, rm);
 }
@@ -547,10 +569,43 @@ void SetUpBody(glm::mat4 modelSoFar, RenderManager &rm)
     glm::mat4 body = ScaleMatrix(0.85, 0.85, 1.5);
     rm.SetColor(0.0, 0.0, 0.0);
     rm.Render(RenderManager::SPHERE, modelSoFar * translate * body);
+
+    //render the legs
+    glm::mat4 rearLeftLegTranslate = TranslateMatrix(0.4, -0.15, -1);
+    glm::mat4 rearRightLegTranslate = TranslateMatrix(-0.4, -0.15, -1);
+    glm::mat4 frontLeftLegTranslate = TranslateMatrix(0.4, -0.15, .9);
+    glm::mat4 frontRightLegTranslate = TranslateMatrix(-0.4, -0.15, .9);
+    glm::mat4 leg = ScaleMatrix(0.15, 1.5, 0.2);
+    glm::mat4 legRotate = RotateMatrix(90, 1, 0, 0);
+    rm.SetColor(0.0, 0.0, 0.0);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * rearLeftLegTranslate * leg * legRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * rearRightLegTranslate * leg * legRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * frontLeftLegTranslate * leg * legRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * frontRightLegTranslate * leg * legRotate);
+
+
+    //render the feet
+    glm::mat4 rearLeftFootTranslate = TranslateMatrix(0.4, -1.8, -1);
+    glm::mat4 rearRightFootTranslate = TranslateMatrix(-0.4, -1.8, -1);
+    glm::mat4 frontLeftFootTranslate = TranslateMatrix(0.4, -1.8, .9);
+    glm::mat4 frontRightFootTranslate = TranslateMatrix(-0.4, -1.8, .9);
+    glm::mat4 foot = ScaleMatrix(0.2, 0.2, 0.4);
+    glm::mat4 footRotate = RotateMatrix(-45, 1, 0, 0);
+    rm.SetColor(0.39, 0.26, 0.12);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * rearLeftFootTranslate * foot * footRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * rearRightFootTranslate * foot * footRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * frontLeftFootTranslate * foot * footRotate);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * frontRightFootTranslate * foot * footRotate);
+
+    //render the tail
+    glm::mat4 tailTranslate = TranslateMatrix(0, 1, -2.5);
+    glm::mat4 tail = ScaleMatrix(0.15, 0.15, 1.5);
+    glm::mat4 tailRotate = RotateMatrix(30, 1, 0, 0);
+    rm.SetColor(0.39, 0.26, 0.12);
+    rm.Render(RenderManager::CYLINDER, modelSoFar * translate * tailTranslate * tailRotate * tail);
 }
 
-void
-SetUpDog(int counter, RenderManager &rm)
+void SetUpDog(int counter, RenderManager &rm)
 {
     glm::mat4 identity(1.0f);
 
@@ -558,36 +613,42 @@ SetUpDog(int counter, RenderManager &rm)
     if ((counter/100 % 2) == 1)
        var=1-var;
 
-    SetUpHead(identity, rm);
+    SetUpHead(identity, counter, rm);
     SetUpBody(identity, rm);
-
-    //glm::mat4 M4 = ScaleMatrix(1.0, 1.0, 3.5);
-    //rm.SetColor(0.0, 0.0, 0.0);
-    //rm.Render(RenderManager::CYLINDER, M4);
-
-/*** THIS CODE JUST MAKES THREE SPHERES AND VARIES THEIR
- *** COLOR BASED ON THE COUNTER
- */
-
-    //glm::mat4 M2 = TranslateMatrix(-1.0, 0, 0);
-    //rm.SetColor(0.0, 0.0, 0.0);
-    //rm.Render(RenderManager::SPHERE, M2);
-    //
-    //glm::mat4 M3 = TranslateMatrix(0.0, 0.0, 3.5);
-    //rm.SetColor(1.0, 0.75, 0.79);
-    //rm.Render(RenderManager::SPHERE, M3);
 }
     
 const char *GetVertexShader()
 {
    static char vertexShader[4096];
    strcpy(vertexShader, 
-           "#version 400\n"
-           "layout (location = 0) in vec3 vertex_position;\n"
-           "uniform mat4 MVP;\n"
-           "void main() {\n"
-           "  gl_Position = MVP*vec4(vertex_position, 1.0);\n"
-           "}\n"
+          "#version 400\n"
+          "layout (location = 0) in vec3 vertex_position;\n"
+          "layout (location = 1) in float vertex_data;\n"
+          "layout (location = 2) in vec3 vertex_normal;\n"
+          "uniform mat4 MVP;\n"
+          "uniform vec3 cameraloc;  // Camera position \n"
+          "uniform vec3 lightdir;   // Lighting direction \n"
+          "uniform vec4 lightcoeff; // Lighting coeff, Ka, Kd, Ks, alpha\n"
+          "out float data;\n"
+          "out float shading_amount;\n"
+          "void main() {\n"
+          "  gl_Position = MVP*vec4(vertex_position, 1.0);\n"
+
+          "//vec3 L = normalize(lightdir);\n"
+          "//vec3 V = vec3(cameraloc[0] - vertex_position[0], cameraloc[1] - vertex_position[1], cameraloc[2] - vertex_position[2]);\n"
+          "//V = normalize(V);\n"
+          "//vec3 N = vec3(vertex_normal[0], vertex_normal[1], vertex_normal[2]);\n"
+          "//N = normalize(N);\n"
+          "//float LN = dot(L,vertex_normal);\n"
+          "//vec3 R = vec3(2 * LN * N[0] - L[0], 2 * LN * N[1] - L[1], 2 * LN * N[2] - L[2]);\n"
+          "//R = normalize(R);\n"
+          "//float RV = dot(R,V);\n"
+          "//float diffuse = LN > 0 ? LN : 0;\n"
+          "//float specular = RV > 0 ? lightcoeff[2] * pow(RV, lightcoeff[3]) : 0;\n"
+          "////shading_amount = lightcoeff[0];\n"
+          "////shading_amount = lightcoeff[0] + lightcoeff[1] * diffuse;\n"
+          "//shading_amount = lightcoeff[0] + lightcoeff[1] * diffuse + lightcoeff[2] * specular;\n"
+          "}\n"
          );
    return vertexShader;
 }
@@ -598,10 +659,16 @@ const char *GetFragmentShader()
    strcpy(fragmentShader, 
            "#version 400\n"
            "uniform vec3 color;\n"
+          "in float shading_amount;\n"
            "out vec4 frag_color;\n"
            "void main() {\n"
            "  frag_color = vec4(color, 1.0);\n"
-           "}\n"
+
+          // Update frag_color by color based on data
+          "//frag_color[0] *= color[0] * shading_amount;\n"
+          "//frag_color[1] *= color[1] * shading_amount;\n"
+          "//frag_color[2] *= color[2] * shading_amount;\n"
+          "}\n"
          );
    return fragmentShader;
 }
