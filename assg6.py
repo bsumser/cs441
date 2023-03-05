@@ -15,11 +15,17 @@ def main():
     # print check for contents
     print(dictList)
 
+    inputList = []
     for line in sys.stdin:
-        print(line)
+        inputList.append(line.strip("\n"))
+    print(inputList)
+
+    num_split = int(inputList[0])
+
+    print(num_split)
 
     # init the dp table
-    t = [ [0]*3 for i in range(3)]
+    dp = [ [0] * num_split]
 
     print(dictList.count("snickle"))
 
