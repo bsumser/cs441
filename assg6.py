@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 import sys
 import time
-sys.setrecursionlimit(3000)
 
 
-def word_find(inputString):
+def word_find(inputString, dp, orig_length):
     if inputString == "":
         return True
     inputStringLength = len(inputString)
     for i in range(1, inputStringLength + 1):
-        if dictList.count(inputString[0:i]) == 1 and word_find(inputString[i:inputStringLength]):
+        if dp[orig_length - inputStringLength][i] == "FALSE":
+            continue
+        if dictList.count(inputString[0:i]) == 1 and word_find(inputString[i:inputStringLength], dp, orig_length):
+            dp[orig_length - inputStringLength][i] = inputString[0:i]
             return True
+    dp[orig_length - inputStringLength][i] = "FALSE"
     return False
 
 def main():
@@ -33,18 +36,16 @@ def main():
         inputList.append(line.strip("\n"))
     print(inputList)
 
-    num_split = int(inputList[0])
 
-    print(num_split)
+    for i in range(1,4):
+        inputLength = len(inputList[i]) + 1
 
-    # init the dp table
-    dp = [[0] * num_split for i in range(num_split)]
+        # init the dp table
+        dp = [[None] * inputLength for i in range(inputLength)]
 
-    print(dictList.count("snickle"))
-
-    start_time = time.time()
-    print(word_find(inputList[1]))
-    print("--- %s seconds ---" % (time.time() - start_time))
+        start_time = time.time()
+        print(word_find(inputList[i], dp, inputLength - 1))
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 
 main()
