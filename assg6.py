@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 import sys
+import time
+sys.setrecursionlimit(3000)
+
+
+def word_find(inputString):
+    if inputString == "":
+        return True
+    inputStringLength = len(inputString)
+    for i in range(1, inputStringLength + 1):
+        if dictList.count(inputString[0:i]) == 1 and word_find(inputString[i:inputStringLength]):
+            return True
+    return False
 
 def main():
 
@@ -10,10 +22,11 @@ def main():
     data = f.read()
 
     # split file contents into list on new line
+    global dictList
     dictList = data.split("\n")
 
     # print check for contents
-    print(dictList)
+    # print(dictList)
 
     inputList = []
     for line in sys.stdin:
@@ -25,9 +38,13 @@ def main():
     print(num_split)
 
     # init the dp table
-    dp = [ [0] * num_split]
+    dp = [[0] * num_split for i in range(num_split)]
 
     print(dictList.count("snickle"))
+
+    start_time = time.time()
+    print(word_find(inputList[1]))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 main()
