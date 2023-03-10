@@ -1,4 +1,10 @@
-GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path){
+#include <vector>
+#include <stdio.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+
+GLuint LoadShaders(const char *vertex_file_path, const char * fragment_file_path){
 
 	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
