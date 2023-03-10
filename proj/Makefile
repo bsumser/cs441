@@ -1,5 +1,5 @@
 CC=g++
-CXXFLAGS = -lglfw -lGLEW -lgL
+CXXFLAGS = -g -lglfw -lGLEW -lgL
 
 main: main.o
 	$(CC) -o main $(CFLAGS) main.o 
