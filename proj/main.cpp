@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     //compile shader program
-    GLuint programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
+    GLuint programID = LoadShaders( "./common/SimpleVertexShader.vertexshader", "./common/SimpleFragmentShader.fragmentshader" );
 
     do{
         // Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
