@@ -1,0 +1,6 @@
+#+title: Project Log
+
+* Time Log
+** <2023-03-11 Sat>
+*** Added WASD user input and print to console
+*** Added basic fps counter
