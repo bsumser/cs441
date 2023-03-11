@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 {
     std::cout << "Hello World" << std::endl;
 
-    int width = 1024;
-    int height = 768;
+    int width = 1920;
+    int height = 1080;
 
 // Initialise GLFW
     glewExperimental = true; // Needed for core profile
@@ -55,8 +55,9 @@ int main(int argc, char *argv[])
     glBindVertexArray(VertexArrayID);
     static const GLfloat g_vertex_buffer_data[] = {
     -1.0f, -1.0f, 0.0f,
+    -1.0f, 1.0f, 0.0f,
     1.0f, -1.0f, 0.0f,
-    0.0f,  1.0f, 0.0f,};
+    1.0f,  1.0f, 0.0f,};
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -76,14 +77,23 @@ int main(int argc, char *argv[])
         // Draw nothing, see you in tutorial 2 !
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void*)0);
+        glVertexAttribPointer(0,4,GL_FLOAT,GL_FALSE,0,(void*)0);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
         glDisableVertexAttribArray(0);
 
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            printf("moving up one space\n");
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            printf("moving left one space\n");
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            printf("moving down one space\n");
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            printf("moving right one space\n");
 
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
