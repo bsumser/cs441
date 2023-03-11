@@ -69,7 +69,11 @@ int main(int argc, char *argv[])
     //compile shader program
     GLuint programID = LoadShaders( "./common/SimpleVertexShader.vertexshader", "./common/SimpleFragmentShader.fragmentshader" );
 
+    double lastTime = glfwGetTime();
+    float deltaTime = 0;
+    int fps = 0;
     do{
+        double curTime = glfwGetTime();
         // Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
@@ -94,6 +98,11 @@ int main(int argc, char *argv[])
             printf("moving down one space\n");
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             printf("moving right one space\n");
+
+        deltaTime = float(curTime - lastTime);
+        lastTime = glfwGetTime();
+        fps = 1 / deltaTime;
+        printf("%d fps\n", fps);
 
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
